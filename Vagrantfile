@@ -7,10 +7,10 @@
 # you're doing.
 Vagrant.configure(2) do |config|
 
-  config.ssh.insert_key = false
-config.ssh.username = 'vagrant'
-config.ssh.password = 'vagrant'
-  config.vm.box       = "ubuntu/xenial64"
+#   config.ssh.insert_key = false
+# config.ssh.username = 'vagrant'
+# config.ssh.password = 'vagrant'
+  config.vm.box       = "bento/ubuntu-16.04"
 # give vm a host name
   config.vm.hostname  = "travelWatamu"
 # link working folders to home dir on the vm
