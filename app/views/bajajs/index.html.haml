@@ -1,0 +1,31 @@
+%h1 Listing bajajs
+
+%table
+  %thead
+    %tr
+      %th First name
+      %th Last name
+      %th Number plate
+      %th Phone number
+      %th Stage
+      %th Status
+      %th
+      %th
+      %th
+
+  %tbody
+    - @bajajs.each do |bajaj|
+      %tr
+        %td= bajaj.first_name
+        %td= bajaj.last_name
+        %td= bajaj.number_plate
+        %td= bajaj.phone_number
+        %td= bajaj.stage
+        %td= bajaj.status
+        %td= link_to 'Show', bajaj
+        %td= link_to 'Edit', edit_bajaj_path(bajaj)
+        %td= link_to 'Destroy', bajaj, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Bajaj', new_bajaj_path

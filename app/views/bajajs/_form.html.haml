@@ -1,0 +1,28 @@
+= form_for @bajaj do |f|
+  - if @bajaj.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@bajaj.errors.count, "error")} prohibited this bajaj from being saved:"
+      %ul
+        - @bajaj.errors.full_messages.each do |message|
+          %li= message
+
+  .field
+    = f.label :first_name
+    = f.text_field :first_name
+  .field
+    = f.label :last_name
+    = f.text_field :last_name
+  .field
+    = f.label :number_plate
+    = f.text_field :number_plate
+  .field
+    = f.label :phone_number
+    = f.text_field :phone_number
+  .field
+    = f.label :stage
+    = f.text_field :stage
+  .field
+    = f.label :status
+    = f.check_box :status
+  .actions
+    = f.submit 'Save'
