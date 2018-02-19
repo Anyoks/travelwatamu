@@ -1,0 +1,24 @@
+%p#notice= notice
+
+%p
+  %b First name:
+  = @tuktuk.first_name
+%p
+  %b Last name:
+  = @tuktuk.last_name
+%p
+  %b Number plate:
+  = @tuktuk.number_plate
+%p
+  %b Phone number:
+  = @tuktuk.phone_number
+%p
+  %b Stage:
+  = @tuktuk.stage
+%p
+  %b Status:
+  = @tuktuk.status
+
+= link_to 'Edit', edit_tuktuk_path(@tuktuk)
+\|
+= link_to 'Back', tuktuks_path

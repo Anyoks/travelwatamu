@@ -1,0 +1,2 @@
+class Tuktuk < ApplicationRecord
+end
