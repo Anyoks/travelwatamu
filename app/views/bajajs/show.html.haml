@@ -1,0 +1,24 @@
+%p#notice= notice
+
+%p
+  %b First name:
+  = @bajaj.first_name
+%p
+  %b Last name:
+  = @bajaj.last_name
+%p
+  %b Number plate:
+  = @bajaj.number_plate
+%p
+  %b Phone number:
+  = @bajaj.phone_number
+%p
+  %b Stage:
+  = @bajaj.stage
+%p
+  %b Status:
+  = @bajaj.status
+
+= link_to 'Edit', edit_bajaj_path(@bajaj)
+\|
+= link_to 'Back', bajajs_path

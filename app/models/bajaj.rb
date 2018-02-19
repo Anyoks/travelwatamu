@@ -1,0 +1,2 @@
+class Bajaj < ApplicationRecord
+end
