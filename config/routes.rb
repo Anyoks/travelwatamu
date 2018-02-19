@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resources :bajajs
+  resources :tuktuks
   devise_for :admins
 
   authenticated :admin do
