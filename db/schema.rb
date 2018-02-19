@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema.define(version: 20180219115139) do
+=======
+ActiveRecord::Schema.define(version: 20180219104915) do
+>>>>>>> edd6d424898e302b4db446263dd8e00fbba5bd15
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,6 +56,7 @@ ActiveRecord::Schema.define(version: 20180219115139) do
     t.string "name"
   end
 
+<<<<<<< HEAD
   create_table "sms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "message"
     t.string "transport_mode"
@@ -61,6 +66,8 @@ ActiveRecord::Schema.define(version: 20180219115139) do
     t.datetime "updated_at", null: false
   end
 
+=======
+>>>>>>> edd6d424898e302b4db446263dd8e00fbba5bd15
   create_table "tuktuks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
