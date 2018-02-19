@@ -24,14 +24,30 @@
     <p class="login-box-msg">Sign in to start your session</p>
     <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
       <div class="form-group has-feedback">
-        <%= f.text_field :email, class: 'form-control', autofocus: true %>
+        <%= f.text_field :first_name, class: 'form-control', placeholder: 'First Name', autofocus: true %>
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
       </div>
 
       <div class="form-group has-feedback">
-        <%= f.password_field :password, class: 'form-control', autocomplete: 'off' %>
+        <%= f.text_field :last_name, class: 'form-control', placeholder: 'Last Name',  autofocus: true %>
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+      </div>
+
+      <div class="form-group has-feedback">
+        <%= f.text_field :email, class: 'form-control', placeholder: 'Email', autofocus: true %>
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+      </div>
+
+      <div class="form-group has-feedback">
+        <%= f.password_field :password, class: 'form-control', placeholder: 'Password',  autocomplete: 'off' %>
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
+
+      <div class="form-group has-feedback">
+        <%= f.password_field :password_confirmation, class: 'form-control', placeholder: 'Password Confirmation',  autocomplete: 'off' %>
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>
+
       <div class="row">
         <div class="col-xs-8">
           <div class="checkbox icheck">
