@@ -22,7 +22,7 @@ protected
 
 	def layout_by_resource
 	  # byebug
-		if devise_controller? && action_name == "new" #&& action_name == "edit"
+		if devise_controller? && action_name == "new" || action_name == "create"#&& action_name == "edit"
 			"admin_lte_2_sign_up"
 		else
 			"admin_lte_2"
@@ -35,7 +35,7 @@ protected
 	if current_admin.is_admin?
 	  session["user_return_to"] || "/bajajs" #user_index_path
 	else
-	  new_admin_session_path
+	  "/bajajs"
 	end
   end
 
