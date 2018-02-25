@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(version: 20180219115139) do
-=======
-ActiveRecord::Schema.define(version: 20180219104915) do
->>>>>>> edd6d424898e302b4db446263dd8e00fbba5bd15
+ActiveRecord::Schema.define(version: 20180225133815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,11 +48,20 @@ ActiveRecord::Schema.define(version: 20180219104915) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "btrip_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "phone_number"
+    t.string "location"
+    t.uuid "bajaj_id"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bajaj_id"], name: "index_btrip_requests_on_bajaj_id"
+  end
+
   create_table "roles", id: :serial, force: :cascade do |t|
     t.string "name"
   end
 
-<<<<<<< HEAD
   create_table "sms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "message"
     t.string "transport_mode"
@@ -66,8 +71,38 @@ ActiveRecord::Schema.define(version: 20180219104915) do
     t.datetime "updated_at", null: false
   end
 
-=======
->>>>>>> edd6d424898e302b4db446263dd8e00fbba5bd15
+  create_table "sms_btrip_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "phone_number"
+    t.string "sent_sms"
+    t.string "received_sms"
+    t.string "status"
+    t.uuid "btrip_request_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["btrip_request_id"], name: "index_sms_btrip_requests_on_btrip_request_id"
+  end
+
+  create_table "sms_ttrip_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "phone_number"
+    t.string "sent_sms"
+    t.string "received_sms"
+    t.string "status"
+    t.uuid "ttrip_request_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ttrip_request_id"], name: "index_sms_ttrip_requests_on_ttrip_request_id"
+  end
+
+  create_table "ttrip_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "phone_number"
+    t.string "location"
+    t.uuid "tuktuk_id"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tuktuk_id"], name: "index_ttrip_requests_on_tuktuk_id"
+  end
+
   create_table "tuktuks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"

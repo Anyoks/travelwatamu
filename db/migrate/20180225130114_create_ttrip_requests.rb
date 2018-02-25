@@ -4,9 +4,10 @@ class CreateTtripRequests < ActiveRecord::Migration[5.1]
       t.string :phone_number
       t.string :location
       t.uuid   :tuktuk_id
-      t.boolean :status
+      t.string :status
 
       t.timestamps
     end
+    add_index :ttrip_requests, :tuktuk_id
   end
 end
