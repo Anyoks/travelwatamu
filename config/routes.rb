@@ -1,13 +1,11 @@
 Rails.application.routes.draw do
-<<<<<<< HEAD
+
   namespace :api do
     namespace :v1 do
       get 'sms/create'
     end
   end
-
-=======
->>>>>>> edd6d424898e302b4db446263dd8e00fbba5bd15
+  
   resources :bajajs
   resources :tuktuks
   devise_for :admins
