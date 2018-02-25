@@ -2,7 +2,8 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      get 'sms/create'
+      get '/sms', :to => 'sms#create'
+      resources :sms, only: [:create]
     end
   end
   
