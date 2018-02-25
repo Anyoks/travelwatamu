@@ -1,0 +1,2 @@
+class BtripRequest < ApplicationRecord
+end
