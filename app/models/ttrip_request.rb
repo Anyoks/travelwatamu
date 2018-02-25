@@ -1,0 +1,2 @@
+class TtripRequest < ApplicationRecord
+end
