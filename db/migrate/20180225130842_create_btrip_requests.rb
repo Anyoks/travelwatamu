@@ -4,7 +4,7 @@ class CreateBtripRequests < ActiveRecord::Migration[5.1]
       t.string :phone_number
       t.string :location
       t.uuid   :bajaj_id
-      t.status :boolean
+      t.boolean :status
 
       t.timestamps
     end
