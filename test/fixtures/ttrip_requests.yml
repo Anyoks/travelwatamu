@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: ttrip_requests
+#
+#  id           :uuid             not null, primary key
+#  phone_number :string
+#  location     :string
+#  tuktuk_id    :uuid
+#  status       :string
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
+
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:

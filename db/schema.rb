@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180225133815) do
+ActiveRecord::Schema.define(version: 20180225152646) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -58,6 +58,14 @@ ActiveRecord::Schema.define(version: 20180225133815) do
     t.index ["bajaj_id"], name: "index_btrip_requests_on_bajaj_id"
   end
 
+  create_table "btrips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "status"
+    t.uuid "btrip_request_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["btrip_request_id"], name: "index_btrips_on_btrip_request_id"
+  end
+
   create_table "roles", id: :serial, force: :cascade do |t|
     t.string "name"
   end
@@ -101,6 +109,14 @@ ActiveRecord::Schema.define(version: 20180225133815) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tuktuk_id"], name: "index_ttrip_requests_on_tuktuk_id"
+  end
+
+  create_table "ttrips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "status"
+    t.uuid "ttrip_request_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ttrip_request_id"], name: "index_ttrips_on_ttrip_request_id"
   end
 
   create_table "tuktuks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: sms_ttrip_requests
+#
+#  id               :uuid             not null, primary key
+#  phone_number     :string
+#  sent_sms         :string
+#  received_sms     :string
+#  status           :string
+#  ttrip_request_id :uuid
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#
+
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
