@@ -39,7 +39,7 @@ class Sms < ApplicationRecord
 			# this order is important
 			params_array << self.message << transport_mode << phone_number << current_location
 
-			save_params = 	 params_array
+			save_params = sms_params params_array
 
 			sms = Sms.new(save_params)
 			sms.save

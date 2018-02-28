@@ -16,7 +16,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 			# if @redeemed_status[0] == true 
 				
 				# render json: { success: true, message: "#{@redeemed_status[1]}", phone_number: "#{@sms.phone_number}" }, status: :ok
-				render json: { sms: [success: true, message: "Asente  #{@processed_text.transport_mode}",
+				render json: { sms: [success: true, message: "Asante. Umeagiza #{@processed_text.transport_mode}
+				 ikuchukue #{@processed_text.current_location}. Subiri kidogo...",
 				 phone_number: "#{@sms.phone_number}"]}, status: :ok
 				
 
