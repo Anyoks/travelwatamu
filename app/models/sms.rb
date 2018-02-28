@@ -64,7 +64,8 @@ class Sms < ApplicationRecord
 			words = text_message.scan (/\w+/)
 
 			
-			transport_mode = words[words.index{|s| s.include?("tuk")}]
+			# transport_mode = words[words.index{|s| s.include?("tuk")}]
+			transport_mode = "tukutuku" #to standardize database data
 			return transport_mode
 
 		elsif text_message.include?("baj")
@@ -73,7 +74,8 @@ class Sms < ApplicationRecord
 			# 
 			words = text_message.scan (/\w+/)
 
-			transport_mode = words[words.index{|s| s.include?("baj")}]
+			# transport_mode = words[words.index{|s| s.include?("baj")}]
+			transport_mode = "bajaji" #to standardize database data
 			return transport_mode
 				
 		else
@@ -110,6 +112,16 @@ class Sms < ApplicationRecord
 			return current_location
 		end
 
+	end
+
+	def make_trip_request
+		# if transport mode is tuktuk
+		if self.transport_mode.include?('tuk')
+		request_trip = self.make_tuk_tuk_trip_request
+
+
+		# if transport mode is bajaj
+		request_trip = self.make_tuk_tuk_trip_request
 	end
 
 
