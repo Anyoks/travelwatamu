@@ -16,7 +16,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 			# if @redeemed_status[0] == true 
 				
 				# render json: { success: true, message: "#{@redeemed_status[1]}", phone_number: "#{@sms.phone_number}" }, status: :ok
-				render json: { sms: [success: true, message: " you asked for a #{@processed_text.transport_mode}", phone_number: "#{@sms.phone_number}"]}, status: :ok
+				render json: { sms: [success: true, message: "Asente  #{@processed_text.transport_mode}",
+				 phone_number: "#{@sms.phone_number}"]}, status: :ok
 				
 
 			# else
@@ -27,7 +28,12 @@ class Api::V1::SmsController < Api::V1::BaseController
 		else
 			
 			# render json: { success: false, error: "#{@processed_text[1]}", phone_number: "#{@sms.phone_number}"}, status: :unprocessable_entity
-			render json: { sms: [success: false, message: "Wrong message format. Please ensure the message has  the format *BOOKCODE*VOUCHERCODE# and try again ", phone_number: "#{@sms.phone_number}"]}, status: :ok
+			render json: { sms: [success: false,
+				message: "Ujumbe haujakamilika. Ungependa kuchukuliwa wapi?
+				Wataka Tukutuku au bajaji? 
+				Tafadhali tueleze pale ulipo na kama wataka tukutuku au bajaji. Kwa Mafano kama ni Rich Land tuma:::  
+				Bajaji Rich Land au tukutuku Rich Land. Jaribu tena.",
+				phone_number: "#{@sms.phone_number}"]}, status: :ok
 		end
 		
   end
