@@ -17,6 +17,8 @@
 # falied    - The driver took too long to respond
 # Cancelled - the driver did not accept the trip request
 # success  - the driver accepted the trip request
+# 
+# phone_number is the customer's number
 
 class SmsTtripRequest < ApplicationRecord
 	belongs_to :ttrip_request

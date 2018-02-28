@@ -10,21 +10,32 @@ class Api::V1::SmsController < Api::V1::BaseController
 		# byebug
 
 		if @processed_text.class != Array 
-			# # attempt redeem, the result is an array with true/false + the error or success message
-			# @redeemed_status = @processed_text.attempt_redeem
+			# attempt making a trip request from the message that has been successully processed
+			# This will return a Bajaj or a Tuktuk trip request depending on what the user requsted
+			@trip_request = @processed_text.make_trip_request
 
-			# if @redeemed_status[0] == true 
+			#send amessage to both the customer and the free tukTuk/driver about the trip
+			if @trip_request
 				
-				# render json: { success: true, message: "#{@redeemed_status[1]}", phone_number: "#{@sms.phone_number}" }, status: :ok
-				render json: { sms: [success: true, message: "Asante. Umeagiza #{@processed_text.transport_mode}
-				 ikuchukue #{@processed_text.current_location}. Subiri kidogo...",
+				
+				render json: { sms: [ {
+					success: true, message: "Asante. Umeagiza #{@processed_text.transport_mode}
+											 ikuchukue #{@processed_text.current_location}. Subiri kidogo...",
+								 phone_number: "#{@sms.phone_number}"
+				 },
+
+				 {
+				 	success: true, message: "Kuna Kazi, hapo #{@trip_request.location} Uko free? Jibu na Ndio au la ",
+				 				 phone_number: "#{@trip_request.tuktuk.phone_number}"
+				 }
+
+				 ]}, status: :ok
+				 
+			else
+				render json: { sms: [success: false, message: "Asante. Umeagiza #{@processed_text.transport_mode}
+				 ikuchukue #{@processed_text.current_location}. Tukutuku zote ziko busy. Jaribu baadaye...kidog",
 				 phone_number: "#{@sms.phone_number}"]}, status: :ok
-				
-
-			# else
-			# 	# render json: { success: false, error: "#{@redeemed_status[1]}",  phone_number: "#{@sms.phone_number}"}, status: :unprocessable_entity
-			# 	render json: { sms: [success: false, message: "#{@redeemed_status[1]}", phone_number: "#{@sms.phone_number}"]}, status: :ok
-			# end
+			end
 
 		else
 			
