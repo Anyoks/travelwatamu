@@ -38,6 +38,12 @@ class SmsBtripRequest < ApplicationRecord
 	# after the status is updated this method is called to update the 
 	# ttrip_request status that initiated this sms with the appropriate status as 
 	# explained above
+	# 
+	def get_current_location
+		location = self.btrip_request.get_current_location
+		return location
+	end
+
 	def update_btrip_request
 		btrip_request = self.btrip_request
 		status  	  = self.status

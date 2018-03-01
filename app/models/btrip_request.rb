@@ -20,6 +20,7 @@
 
 class BtripRequest < ApplicationRecord
 	belongs_to :bajaj
+	belongs_to :sms
 	has_one    :sms_btrip_request
 	has_one    :btrip
 	after_commit :send_sms_btrip_request, on: :create
@@ -50,6 +51,32 @@ class BtripRequest < ApplicationRecord
  		sms.save	
  		logger.debug "Created New SMS Tuktuk Trip Request"	
 	end
+
+	def get_driver_phone_number
+
+		number = self.bajaj.phone_number
+		return number
+	end
+
+	def get_transport_mode
+
+		transport_mode =  self.sms.transport_mode
+		return transport_mode
+	end
+
+	def get_current_location
+		location = self.sms.current_location
+		return location
+	end
+
+	def get_customer_number
+		phone_number = self.phone_number
+		return phone_number
+	end
+
+	protected
+
+
 
 	def btrip_params data
 		name = ["phone_number", "sent_sms", "btrip_request_id", "received_sms", "status"] 

@@ -20,6 +20,7 @@
 
 class TtripRequest < ApplicationRecord
 	belongs_to :tuktuk
+	belongs_to :sms
 	has_one    :sms_ttrip_request
 	has_one    :ttrip
 	after_commit :send_sms_ttrip_request, on: :create
@@ -49,6 +50,28 @@ class TtripRequest < ApplicationRecord
  		sms = SmsTtripRequest.new(save_params)
  		sms.save
  		logger.debug "Created New SMS Tuktuk Trip Request"		
+	end
+
+	def get_driver_phone_number
+
+		number = self.tuktuk.phone_number
+		return number
+	end
+
+	def get_transport_mode
+
+		transport_mode =  self.sms.transport_mode
+		return transport_mode
+	end
+
+	def get_current_location
+		location = self.sms.current_location
+		return location
+	end
+
+	def get_customer_number
+		phone_number = self.phone_number
+		return phone_number
 	end
 
 protected
