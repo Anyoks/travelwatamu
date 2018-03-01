@@ -12,6 +12,8 @@
 #
 
 class Sms < ApplicationRecord
+	has_many :ttrip_request
+	has_many :btrip_request
 
 
 	# sample message from customer
@@ -52,6 +54,132 @@ class Sms < ApplicationRecord
 			end		
 	end
 
+	def response_processing_for_tuktuk_driver
+		
+		# check if he is just updating his status to free or busy or accepting a trip
+		# the key is in the sms if it contains niko busy or niko free
+		# 
+		# look for the sms trip request he is replying to 
+		# improvement would be to check the time as well because it could be a very old sms.
+		# or i can make a cron job to cacell all trips that take more thatn x mins to receice
+		# a response
+		request_sms = @driver.sms_ttrip_request.where(status: "waiting").first
+
+		# if this is nil then there was no trip request made for him
+		if request_sms.present?
+			# check the response first
+			if self.message.downcase == "yes" || self.message.downcase == "ndio"
+				
+				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
+
+				if success 
+					# go to sms_ttrip_request and add an after update 
+					
+					# send message to customer with driver N0. plate
+					# send messge to driver with customer Phone Number
+					customer_number = request_sms.phone_number
+					driver_plate = request_sms.ttrip_request.tuktuk.number_plate
+					location = request_sms.get_current_location
+					# transport_mode = 
+
+
+					# we'll send the number & location to the driver 
+					# Number plate to the customer
+					return true, customer_number, driver_plate, location, "tukutuku"
+				else
+					logger.debug "error updating the status"
+					return false, "Samahani, tuma jibu lako tena tafadhali."
+				end
+			elsif self.message.downcase == "no" || self.message.downcase == "la"
+				
+				cancel = request_sms.update_attributes(status: "cancelled")
+				if cancel
+					# initiate a new trip request with another driver
+					# return the sms sent back to the sms controller and make a tip request from there.
+					sms = request_sms.ttrip_request.sms
+					# make duplicate record but different id
+					new_sms = sms.dup
+					new_sms.save
+					
+					logger.debug "The driver cancelled this Request. Creating a new one"
+					return true, new_sms, "cancelled"
+				else
+					logger.debug "error updating the status"
+					return false, "Samahani, tuma jibu lako tena tafadhali."
+				end
+			else
+				# the driver's response does not make sense, ask them to send it again
+				logger.debug "Error with the response"
+				return false, "Jibu Lako halijakamilika. Jibu Ndio/yes kama uko free au la/No kama uko busy.
+				 Jaribu tena tafadhali. "
+			end
+		else
+			# if there's no sms_ttrip_request then there was no trip initiated
+			logger.debug " No trip found for this driver"
+			return false, "no trip request" 
+		end 
+	end
+
+	def response_processing_for_bajaj_driver
+		
+		# check trip request by phone number
+		request_sms = @driver.sms_btrip_request.where(status: "waiting").first
+
+		# if this is nil then there was no trip request made for him
+		if request_sms.present?
+			# check the response first
+			if self.message.downcase == "yes" || self.message.downcase == "ndio"
+				
+				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
+
+				if success 
+					# go to sms_ttrip_request and add an after update 
+					
+					# send message to customer with driver N0. plate
+					# send messge to driver with customer Phone Number
+					customer_number = request_sms.phone_number
+					driver_plate = request_sms.btrip_request.bajaj.number_plate
+					location = request_sms.get_current_location
+
+
+					# we'll send the number & location to the driver 
+					# Number plate to the customer
+					return true, customer_number, driver_plate, location, "Bajaji"
+				else
+					logger.debug "error updating the status"
+					return false, "Samahani, tuma jibu lako tena tafadhali."
+				end
+			elsif self.message.downcase == "no" || self.message.downcase == "la"
+				
+				cancel = request_sms.update_attributes(status: "cancelled")
+				if cancel
+					# initiate a new trip request with another driver
+					# return the sms sent back to the sms controller and make a tip request from there.
+					
+					sms = request_sms.btrip_request.sms
+					# make duplicate record but different id
+					new_sms = sms.dup
+					new_sms.save
+					
+					logger.debug "The driver cancelled this Request. Creating a new one"
+					return true, new_sms, "cancelled"
+				else
+					logger.debug "error updating the status"
+					return false, "Samahani, tuma jibu lako tena tafadhali."
+				end
+			else
+				# the driver's response does not make sense, ask them to send it again
+				logger.debug "Error with the response"
+				return false, "Jibu Lako halijakamilika. Jibu Ndio/yes kama uko free au la/No kama uko busy.
+				 Jaribu tena tafadhali. "
+			end
+		else
+			# if there's no sms_ttrip_request then there was no trip initiated
+			logger.debug " No trip found for this driver"
+			return false, "no trip request" 
+		end 
+	end
+
 	def process_driver_sms
 		# if the message contains ndio or la or busy or free it's definitely a driver replying the first text
 		# if it's a driver then he probably is reply trip request sms with a yes or no
@@ -60,88 +188,18 @@ class Sms < ApplicationRecord
 		phone_number = self.phone_number
 
 		# tuktuk or bajaj?
-		driver = which_driver 
+		@driver = which_driver 
 
-		if driver.class.name == "Tuktuk"
-			# check if he is just updating his status to free or busy or accepting a trip
-			# the key is in the sms if it contains niko busy or niko free
-			# 
-			# look for the sms trip request he is replying to 
-			# improvement would be to check the time as well because it could be a very old sms.
-			# or i can make a cron job to cacell all trips that take more thatn x mins to receice
-			# a response
-			request_sms = driver.sms_ttrip_request.where(status: "waiting").first
+		if @driver.class.name == "Tuktuk"
+			response = response_processing_for_tuktuk_driver
+			return response
 
-			# if this is nil then there was no trip request made for him
-			if request_sms.present?
-				# check the response first
-				if self.message.downcase == "yes" || self.message.downcase == "ndio"
-					
-					success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
-
-					if success 
-						# go to sms_ttrip_request and add an after update 
-						
-						# send message to customer with driver N0. plate
-						# send messge to driver with customer Phone Number
-						return true, "success"
-					else
-						return false, "error updating the status"
-					end
-				elsif self.message.downcase == "no" || self.message.downcase == "la"
-					
-					cancel = request_sms.upddate_attributes(status: "cancelled")
-					if cancel
-						# initiate a new trip request with another driver
-						return true, "cancelled"
-					else
-						return false, "error cancelling "
-					end
-				end
-			else
-				# if there's no sms_ttrip_request then there was no trip initiated
-				logger.debug " No trip found for this driver"
-				return false, "no trip request" 
-			end 
-
-		elsif driver.class.name == "Bajaj"
-			# check trip request by phone number
-			request_sms = driver.sms_btrip_request.where(status: "waiting").first
-				byebug
-			# if this is nil then there was no trip request made for him
-			if request_sms.present?
-				# check the response first
-				if self.message.downcase == "yes" || self.message.downcase == "ndio"
-					
-					success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
-
-					if success 
-						# go to sms_ttrip_request and add an after update 
-						
-						# send message to customer with driver N0. plate
-						# send messge to driver with customer Phone Number
-						return true, "success"
-					else
-						return false, "error updating the status"
-					end
-				elsif self.message.downcase == "no" || self.message.downcase == "la"
-					
-					cancel = request_sms.upddate_attributes(status: "cancelled")
-					if cancel
-						# initiate a new trip request with another driver
-						return true, "cancelled"
-					else
-						return false, "error cancelling "
-					end
-				end
-			else
-				# if there's no sms_ttrip_request then there was no trip initiated
-				logger.debug " No trip found for this driver"
-				return false, "no trip request" 
-			end 
+		elsif @driver.class.name == "Bajaj"
+			response = response_processing_for_bajaj_driver
 		else
 			logger.debug "Error Finding the driver"
-			return false
+			return false, "Pole, hujajisajili katika huduma Hii. Kama wewe una tukutuku au bajaji na ungependa
+				kupata kazi ya ziada, Tafadhali piga simu kwa nambari hii kwa habari zaidi. 0711430817 "
 		end
 		
 	end
@@ -197,7 +255,7 @@ class Sms < ApplicationRecord
 	def get_transport_mode
 		text_message = self.message
 		phone_number = self.phone_number
-		text_message.upcase.downcase!
+		text_message = text_message.upcase.downcase!
 
 		if text_message.include?("tuk")
 			# tuktuk trip request
@@ -277,6 +335,7 @@ class Sms < ApplicationRecord
 		phone_number = self.phone_number
 		current_location = self.get_current_location
 		status = "waiting"
+		sms_id = self.id
 
 		# get the very first tuktuk that is free.
 		# In future we need a better way of identifying a tuktuk this method may be baised.
@@ -284,10 +343,10 @@ class Sms < ApplicationRecord
 		# *****what if there's no free driver?
 		tuktuk = Tuktuk.where(status: true).first
 
-		col_name = ["phone_number", "location", "tuktuk_id", "status"] 
+		col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 
 
 		params = []
-		params << phone_number << current_location << tuktuk.id << status
+		params << phone_number << current_location << tuktuk.id << status << sms_id
 
 		save_params =  trip_req_params(params, col_name) 
 
@@ -301,6 +360,7 @@ class Sms < ApplicationRecord
 		phone_number = self.phone_number
 		current_location = self.get_current_location
 		status = "waiting"
+		sms_id = self.id
 
 		# get the very first tuktuk that is free.
 		# In future we need a better way of identifying a tuktuk this method may be baised.
@@ -309,10 +369,10 @@ class Sms < ApplicationRecord
 		# # *****what if there's no free driver?
 		bajaji = Bajaj.where(status: true).first
 
-		col_name = ["phone_number", "location", "bajaj_id", "status"] 
+		col_name = ["phone_number", "location", "bajaj_id", "status", "sms_id"] 
 
 		params = []
-		params << phone_number << current_location << bajaji.id << status
+		params << phone_number << current_location << bajaji.id << status << sms_id
 
 		save_params =  trip_req_params(params, col_name) 
 
