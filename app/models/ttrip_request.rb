@@ -22,7 +22,7 @@ class TtripRequest < ApplicationRecord
 	belongs_to :tuktuk
 	has_one    :sms_ttrip_request
 	has_one    :ttrip
-	after_save :sms_ttrip_request
+	after_commit :send_sms_ttrip_request, on: :create
 
 
 	# a ttrip is created  if a ttrip_request is successful
@@ -33,7 +33,7 @@ class TtripRequest < ApplicationRecord
 
 	# this method is triggered from the sms controller when a trip request is successfully made
 	# this method is called after the trip request is saved in the dB
-	def sms_ttrip_request 
+	def send_sms_ttrip_request 
 		# make a new sms to request the trip
  		phone_number = self.phone_number
  		sent_sms = "Kuna Kazi, hapo #{self.location} Uko free? Jibu na Ndio au la"#check sms controller for the real sms
@@ -47,8 +47,11 @@ class TtripRequest < ApplicationRecord
  		save_params = ttrip_params params
 
  		sms = SmsTtripRequest.new(save_params)
- 		sms.save		
+ 		sms.save
+ 		logger.debug "Created New SMS Tuktuk Trip Request"		
 	end
+
+protected
 
 	def ttrip_params data
 		name = ["phone_number", "sent_sms", "ttrip_request_id", "received_sms", "status"] 

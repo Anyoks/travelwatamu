@@ -21,51 +21,16 @@ class Sms < ApplicationRecord
 	# 
 	
 
-	def process_text
+	def process_customer_sms
 		text_message = self.message
 		phone_number = self.phone_number
 
-		# check if this is a driver or a customer
-		# if the message contains tuk or baj it should be a customer. 
-		# if the message contains ndio or la or busy or free it's definitely a driver replying the first text
-
-		# if it's a driver then he probably is reply trip request sms with a yes or no
-		# *******future implement he probably is telling the system that he is free or busy
-		if check_if_driver
-
-			# tuktuk or bajaj?
-			driver = which_driver 
-
-			if driver.class.name == "Tuktuk"
-			# check trip request by phone number
-				# improvement would be to check the time as well 
-				request_sms = driver.sms_ttrip_request.where(status: "waiting").first
-
-				# if this is nil then there was no trip request made for him
-				if request_sms.present?
-					# check the response first
-					if self.message.downcase == "yes" || self.message.downcase == "ndio"
-					# request_sms.upddate_attributes()
-					# go to sms_ttrip_request and add an after update 
-					# to update ttrip_reusta as well before sending the last 2 sms
-					elsif self.message.downcase == "no" || self.message.downcase == "la"
-						
-					end
-				else
-				end 
-
-			elsif driver.class.name == "Bajaj"
-			# check trip request by phone number
-			else
-				logger.debug "Error Finding the driver"
-				return false
-			end
-
-		else
-			# Get the trasport mode 
-		
-			transport_mode = get_transport_mode
-			current_location = get_current_location
+		# if the message contains tuk or baj it should be a customer. 	
+		# Must be a customer!
+		# Get the trasport mode 
+	
+		transport_mode = get_transport_mode
+		current_location = get_current_location
 
 		# if the returned result is an array, there's an error
 			if transport_mode.class != Array
@@ -84,20 +49,112 @@ class Sms < ApplicationRecord
 			else
 				logger.debug "Could not identify tranport mode in the text message: #{self.message}"
 				return false, "There's no tranport mode in the text message."
-			end
-		
-		end
+			end		
+	end
 
+	def process_driver_sms
+		# if the message contains ndio or la or busy or free it's definitely a driver replying the first text
+		# if it's a driver then he probably is reply trip request sms with a yes or no
+		# *******future implement he probably is telling the system that he is free or busy
+		text_message = self.message
+		phone_number = self.phone_number
+
+		# tuktuk or bajaj?
+		driver = which_driver 
+
+		if driver.class.name == "Tuktuk"
+			# check if he is just updating his status to free or busy or accepting a trip
+			# the key is in the sms if it contains niko busy or niko free
+			# 
+			# look for the sms trip request he is replying to 
+			# improvement would be to check the time as well because it could be a very old sms.
+			# or i can make a cron job to cacell all trips that take more thatn x mins to receice
+			# a response
+			request_sms = driver.sms_ttrip_request.where(status: "waiting").first
+
+			# if this is nil then there was no trip request made for him
+			if request_sms.present?
+				# check the response first
+				if self.message.downcase == "yes" || self.message.downcase == "ndio"
+					
+					success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
+
+					if success 
+						# go to sms_ttrip_request and add an after update 
+						
+						# send message to customer with driver N0. plate
+						# send messge to driver with customer Phone Number
+						return true, "success"
+					else
+						return false, "error updating the status"
+					end
+				elsif self.message.downcase == "no" || self.message.downcase == "la"
+					
+					cancel = request_sms.upddate_attributes(status: "cancelled")
+					if cancel
+						# initiate a new trip request with another driver
+						return true, "cancelled"
+					else
+						return false, "error cancelling "
+					end
+				end
+			else
+				# if there's no sms_ttrip_request then there was no trip initiated
+				logger.debug " No trip found for this driver"
+				return false, "no trip request" 
+			end 
+
+		elsif driver.class.name == "Bajaj"
+			# check trip request by phone number
+			request_sms = driver.sms_btrip_request.where(status: "waiting").first
+				byebug
+			# if this is nil then there was no trip request made for him
+			if request_sms.present?
+				# check the response first
+				if self.message.downcase == "yes" || self.message.downcase == "ndio"
+					
+					success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
+
+					if success 
+						# go to sms_ttrip_request and add an after update 
+						
+						# send message to customer with driver N0. plate
+						# send messge to driver with customer Phone Number
+						return true, "success"
+					else
+						return false, "error updating the status"
+					end
+				elsif self.message.downcase == "no" || self.message.downcase == "la"
+					
+					cancel = request_sms.upddate_attributes(status: "cancelled")
+					if cancel
+						# initiate a new trip request with another driver
+						return true, "cancelled"
+					else
+						return false, "error cancelling "
+					end
+				end
+			else
+				# if there's no sms_ttrip_request then there was no trip initiated
+				logger.debug " No trip found for this driver"
+				return false, "no trip request" 
+			end 
+		else
+			logger.debug "Error Finding the driver"
+			return false
+		end
 		
 	end
 
-	# returns true for driver and false for customer
+	# returns true or false
+	# true -- driver
+	# false -- customer 
 	def check_if_driver
 		text_message = self.message
 		phone_number = self.phone_number
 
 		# remove all spaces and new lines so that its one word.
-		tmp_text = text_message.downcase!.gsub(/[[:space:]]/, '')
+		tmp_text = text_message.upcase.downcase!.gsub(/[[:space:]]/, '')
 
 		if tmp_text == "ndio" || tmp_text == "yes"
 			logger.debug "This is a driver"
@@ -111,8 +168,7 @@ class Sms < ApplicationRecord
 		else
 			logger.debug "This is a customer"
 			return false
-		end
-				
+		end			
 	end
 
 	def which_driver
@@ -124,12 +180,12 @@ class Sms < ApplicationRecord
 
 		if tuktuk_driver.present?
 
-			logger.debug "Found driver #{tuktuk_driver}"
+			logger.debug "Found driver #{tuktuk_driver.first_name}"
 			return tuktuk_driver
 
 		elsif bajaji_driver.present?
 
-			logger.debug "Found driver #{bajaji_driver}"
+			logger.debug "Found driver #{bajaji_driver.first_name}"
 			return bajaji_driver
 
 		else
@@ -141,7 +197,7 @@ class Sms < ApplicationRecord
 	def get_transport_mode
 		text_message = self.message
 		phone_number = self.phone_number
-		text_message.downcase!
+		text_message.upcase.downcase!
 
 		if text_message.include?("tuk")
 			# tuktuk trip request
@@ -237,6 +293,7 @@ class Sms < ApplicationRecord
 
 		trip = TtripRequest.new(save_params)
 		trip.save
+		logger.debug "Made a Tuktuk Trip Request For customer"
 		return trip
 	end
 
@@ -261,7 +318,7 @@ class Sms < ApplicationRecord
 
 		trip = BtripRequest.new(save_params)
 		trip.save
-
+		logger.debug "Made a Bajaj Trip Request For customer"
 		return trip	
 	end
 

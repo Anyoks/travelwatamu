@@ -21,6 +21,7 @@
 # 
 class SmsBtripRequest < ApplicationRecord
 	belongs_to :btrip_request
+	after_commit :update_btrip_request, on: :update
 
 	# send message to driver asking if they can take this job
 	# send message to customer saying we are getting you a bajaj
@@ -28,4 +29,19 @@ class SmsBtripRequest < ApplicationRecord
 	# then send sms to customer with tuk tuk No. plate
 	# send sms to Driver with customer phone number and location
 	# start a new trip
+	# 
+	# 
+	
+
+	# this method is called automatically when the a driver responds to a trip request sms
+	# the response is saved and the status is updated accordingly
+	# after the status is updated this method is called to update the 
+	# ttrip_request status that initiated this sms with the appropriate status as 
+	# explained above
+	def update_btrip_request
+		btrip_request = self.btrip_request
+		status  	  = self.status
+		btrip_request.update_attributes(status: "#{status}")
+		logger.debug "UPDATING Btrip Request. Driver's response:: #{status}"
+	end
 end

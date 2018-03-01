@@ -22,7 +22,7 @@ class BtripRequest < ApplicationRecord
 	belongs_to :bajaj
 	has_one    :sms_btrip_request
 	has_one    :btrip
-	after_save :sms_ttrip_request
+	after_commit :send_sms_btrip_request, on: :create
 	# a ttrip is created  if a ttrip_request is successful
 	# 
 	# after trip request is made, a new sms btrip request is made.
@@ -33,21 +33,22 @@ class BtripRequest < ApplicationRecord
 
 	# this method is triggered from the sms controller when a trip request is successfully made
 	# this method is called after the trip request is saved in the dB
-	def sms_ttrip_request 
+	def send_sms_btrip_request 
 		# make a new sms to request the trip
  		phone_number = self.phone_number
  		sent_sms = "Kuna Kazi, hapo #{self.location} Uko free? Jibu na Ndio au la"#check sms controller for the real sms
  		status  = "waiting" # this will change as soon as the driver responds appropriately
- 		ttrip_request_id = self.id
- 		received_sms = ""#get response from driver through sms controller
+ 		btrip_request_id = self.id
+ 		received_sms = "" #this will be updated when the driver responds
 
  		params = []
- 		params << phone_number << sent_sms << ttrip_request_id << received_sms << status
+ 		params << phone_number << sent_sms << btrip_request_id << received_sms << status
 
  		save_params = btrip_params params
 
  		sms = SmsBtripRequest.new(save_params)
- 		sms.save		
+ 		sms.save	
+ 		logger.debug "Created New SMS Tuktuk Trip Request"	
 	end
 
 	def btrip_params data
