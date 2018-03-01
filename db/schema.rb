@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180225152646) do
+ActiveRecord::Schema.define(version: 20180301141752) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,7 +55,9 @@ ActiveRecord::Schema.define(version: 20180225152646) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "sms_id"
     t.index ["bajaj_id"], name: "index_btrip_requests_on_bajaj_id"
+    t.index ["sms_id"], name: "index_btrip_requests_on_sms_id", unique: true
   end
 
   create_table "btrips", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -108,6 +110,8 @@ ActiveRecord::Schema.define(version: 20180225152646) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "sms_id"
+    t.index ["sms_id"], name: "index_ttrip_requests_on_sms_id", unique: true
     t.index ["tuktuk_id"], name: "index_ttrip_requests_on_tuktuk_id"
   end
 
