@@ -49,5 +49,16 @@ class SmsTtripRequest < ApplicationRecord
 		ttrip_request.update_attributes(status: "#{status}")
 		logger.debug "UPDATING Ttrip Request. Driver's response:: #{status}"
 	end
+
+	def start_trip
+		trip = self.ttrip_request.start_trip
+
+		if trip
+			return trip
+		else
+			logger.debug "Error creating a new trip"
+			return false
+		end
+	end
 	
 end

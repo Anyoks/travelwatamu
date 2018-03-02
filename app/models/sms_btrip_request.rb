@@ -50,4 +50,15 @@ class SmsBtripRequest < ApplicationRecord
 		btrip_request.update_attributes(status: "#{status}")
 		logger.debug "UPDATING Btrip Request. Driver's response:: #{status}"
 	end
+
+	def start_trip
+		trip = self.btrip_request.start_trip
+
+		if trip
+			return trip
+		else
+			logger.debug "Error creating a new trip"
+			return false
+		end
+	end
 end

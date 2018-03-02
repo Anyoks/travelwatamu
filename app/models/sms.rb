@@ -78,14 +78,22 @@ class Sms < ApplicationRecord
 					# send message to customer with driver N0. plate
 					# send messge to driver with customer Phone Number
 					customer_number = request_sms.phone_number
-					driver_plate = request_sms.ttrip_request.tuktuk.number_plate
-					location = request_sms.get_current_location
+					driver_plate 	= request_sms.ttrip_request.tuktuk.number_plate
+					location 		= request_sms.get_current_location
 					# transport_mode = 
 
+					# make a new trip
+					trip = request_sms.start_trip
+
+					if trip
 
 					# we'll send the number & location to the driver 
 					# Number plate to the customer
-					return true, customer_number, driver_plate, location, "tukutuku"
+						return true, customer_number, driver_plate, location, "tukutuku"
+					else
+						logger.debug "Error creating a new trip"
+						return false
+					end
 				else
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
@@ -141,10 +149,18 @@ class Sms < ApplicationRecord
 					driver_plate = request_sms.btrip_request.bajaj.number_plate
 					location = request_sms.get_current_location
 
+					# make a new trip
+					trip = request_sms.start_trip
+
+					if trip
 
 					# we'll send the number & location to the driver 
 					# Number plate to the customer
-					return true, customer_number, driver_plate, location, "Bajaji"
+						return true, customer_number, driver_plate, location, "Bajaji"
+					else
+						logger.debug "Error creating a new trip"
+						return false
+					end
 				else
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
@@ -387,6 +403,12 @@ class Sms < ApplicationRecord
 protected
 	
 	def trip_req_params data, col_name
+		coloumns = col_name
+		hash = Hash[*coloumns.zip(data).flatten]
+		return hash
+	end
+
+	def make_trip_params data, col_name
 		coloumns = col_name
 		hash = Hash[*coloumns.zip(data).flatten]
 		return hash

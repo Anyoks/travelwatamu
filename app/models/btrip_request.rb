@@ -45,11 +45,24 @@ class BtripRequest < ApplicationRecord
  		params = []
  		params << phone_number << sent_sms << btrip_request_id << received_sms << status
 
- 		save_params = btrip_params params
+ 		save_params = btrip_request_params params
 
  		sms = SmsBtripRequest.new(save_params)
  		sms.save	
  		logger.debug "Created New SMS Tuktuk Trip Request"	
+	end
+
+	def start_trip
+		# make a new trip
+		trip_params_array  = []
+		btrip_request_id  = self.id
+		status 			  = "started"
+		trip_params_array << btrip_request_id << status
+
+		save_params = btrip_params trip_params_array
+		new_trip = Btrip.new(save_params)
+		new_trip.save
+		return new_trip
 	end
 
 	def get_driver_phone_number
@@ -78,11 +91,17 @@ class BtripRequest < ApplicationRecord
 
 
 
-	def btrip_params data
+	def btrip_request_params data
 		name = ["phone_number", "sent_sms", "btrip_request_id", "received_sms", "status"] 
 		hash = Hash[*name.zip(data).flatten]
 		return hash
 		
+	end
+
+	def btrip_params data
+		name = ["btrip_request_id", "status"]
+		hash = Hash[*name.zip(data).flatten]
+		return hash
 	end
 	
 end
