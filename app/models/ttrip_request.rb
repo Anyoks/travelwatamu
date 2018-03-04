@@ -87,6 +87,11 @@ class TtripRequest < ApplicationRecord
 		return phone_number
 	end
 
+	# makeing work easier
+	def trip
+		return self.ttrip
+	end
+
 protected
 
 	def ttrip_request_params data

@@ -15,6 +15,11 @@ class Sms < ApplicationRecord
 	has_many :ttrip_request
 	has_many :btrip_request
 
+	# attr_reader :text_message
+	# attr_reader :phone_number
+
+
+
 
 	# sample message from customer
 	# tuktuk watamu                     bajaji watamu
@@ -22,11 +27,16 @@ class Sms < ApplicationRecord
 	# mwisho wa lami tuk tuk            bajaj gede
 	# 
 	
-
-	def process_customer_sms
-		text_message = self.message
+	def standardize_sms
+		text_message  = self.message
 		phone_number = self.phone_number
 
+		@text_message  = text_message .upcase.downcase!
+		@phone_number = phone_number
+	end
+
+
+	def process_customer_sms
 		# if the message contains tuk or baj it should be a customer. 	
 		# Must be a customer!
 		# Get the trasport mode 
@@ -40,7 +50,7 @@ class Sms < ApplicationRecord
 				# Prepare to save the message
 				params_array = []
 				# this order is important
-				params_array << self.message << transport_mode << phone_number << current_location
+				params_array << self.message << transport_mode << @phone_number << current_location
 
 				save_params = sms_params params_array
 
@@ -63,12 +73,13 @@ class Sms < ApplicationRecord
 		# improvement would be to check the time as well because it could be a very old sms.
 		# or i can make a cron job to cacell all trips that take more thatn x mins to receice
 		# a response
+		
 		request_sms = @driver.sms_ttrip_request.where(status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
 			# check the response first
-			if self.message.downcase == "yes" || self.message.downcase == "ndio"
+			if @text_message  == "yes" || @text_message  == "ndio"
 				
 				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
 
@@ -98,7 +109,7 @@ class Sms < ApplicationRecord
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
 				end
-			elsif self.message.downcase == "no" || self.message.downcase == "la"
+			elsif @text_message  == "no" || @text_message  == "la"
 				
 				cancel = request_sms.update_attributes(status: "cancelled")
 				if cancel
@@ -129,14 +140,15 @@ class Sms < ApplicationRecord
 	end
 
 	def response_processing_for_bajaj_driver
-		
+
+		stripped_text = @text_message.gsub(/[[:space:]]/, '')
 		# check trip request by phone number
 		request_sms = @driver.sms_btrip_request.where(status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
 			# check the response first
-			if self.message.downcase == "yes" || self.message.downcase == "ndio"
+			if stripped_text  == "yes" || stripped_text  == "ndio"
 				
 				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
 
@@ -165,7 +177,7 @@ class Sms < ApplicationRecord
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
 				end
-			elsif self.message.downcase == "no" || self.message.downcase == "la"
+			elsif stripped_text  == "no" || stripped_text == "la"
 				
 				cancel = request_sms.update_attributes(status: "cancelled")
 				if cancel
@@ -197,11 +209,11 @@ class Sms < ApplicationRecord
 	end
 
 	def process_driver_sms
+
+		standardize_sms
 		# if the message contains ndio or la or busy or free it's definitely a driver replying the first text
 		# if it's a driver then he probably is reply trip request sms with a yes or no
 		# *******future implement he probably is telling the system that he is free or busy
-		text_message = self.message
-		phone_number = self.phone_number
 
 		# tuktuk or bajaj?
 		@driver = which_driver 
@@ -224,18 +236,17 @@ class Sms < ApplicationRecord
 	# true -- driver
 	# false -- customer 
 	def check_if_driver
-		text_message = self.message
-		phone_number = self.phone_number
 
-		# remove all spaces and new lines so that its one word.
-		tmp_text = text_message.upcase.downcase!.gsub(/[[:space:]]/, '')
+		standardize_sms
 
-		if tmp_text == "ndio" || tmp_text == "yes"
+		stripped_text = @text_message.gsub(/[[:space:]]/, '')
+
+		if stripped_text    == "ndio" || stripped_text  == "yes"
 			logger.debug "This is a driver"
 
 			return true
 			# check trip request by phone number
-		elsif tmp_text == "la" || tmp_text == "no"
+		elsif stripped_text  == "la" || stripped_text   == "no"
 			logger.debug "This is a driver"
 			return true
 			# check trip request
@@ -245,12 +256,14 @@ class Sms < ApplicationRecord
 		end			
 	end
 
+
 	def which_driver
-		phone_number =  self.phone_number
 
-		tuktuk_driver = Tuktuk.where(phone_number: "#{phone_number}").first
+		standardize_sms
 
-		bajaji_driver = Bajaj.where(phone_number: "#{phone_number}").first
+		tuktuk_driver = Tuktuk.where(phone_number: "#{@phone_number}").first
+
+		bajaji_driver = Bajaj.where(phone_number: "#{@phone_number}").first
 
 		if tuktuk_driver.present?
 
@@ -269,26 +282,25 @@ class Sms < ApplicationRecord
 	end
 
 	def get_transport_mode
-		text_message = self.message
-		phone_number = self.phone_number
-		text_message = text_message.upcase.downcase!
+		
+		standardize_sms
 
-		if text_message.include?("tuk")
+		if @text_message.include?("tuk")
 			# tuktuk trip request
 			# 
 			# split the message in to words
-			words = text_message.scan (/\w+/)
+			words = @text_message.scan (/\w+/)
 
 			
 			# transport_mode = words[words.index{|s| s.include?("tuk")}]
 			transport_mode = "tukutuku" #to standardize database data
 			return transport_mode
 
-		elsif text_message.include?("baj")
+		elsif @text_message.include?("baj")
 			# bajaj trip requrest
 			# 
 			# 
-			words = text_message.scan (/\w+/)
+			words = @text_message.scan (/\w+/)
 
 			# transport_mode = words[words.index{|s| s.include?("baj")}]
 			transport_mode = "bajaji" #to standardize database data
@@ -302,24 +314,25 @@ class Sms < ApplicationRecord
 	end
 
 	def get_current_location
-		text_message = self.message
-		phone_number = self.phone_number
-		text_message.downcase!
-
+	
+		standardize_sms
 		# split the message in to words
-		words = text_message.scan (/\w+/)
+		words = @text_message.scan (/\w+/)
 
+		# byebug
 		# get current location for 
-		if text_message.include?("tuk")
+		if @text_message.include?("tuk")
 			location_array  = words - [words[words.index.each{|s| s.include?("tuk")}]]
 
 			current_location = location_array.join(" ")
 			return current_location
-		elsif text_message.include?("baj")
+
+		elsif @text_message.include?("baj")
 			location_array = words - [words[words.index.each{|s| s.include?("baj")}]]
 			
 			current_location = location_array.join(" ")
 			return current_location	
+
 		else
 			location_array  = words
 			current_location = location_array.join(" ")
@@ -348,10 +361,14 @@ class Sms < ApplicationRecord
 	end
 
 	def make_tuk_tuk_trip_request
-		phone_number = self.phone_number
+		
+		standardize_sms
+
 		current_location = self.get_current_location
 		status = "waiting"
 		sms_id = self.id
+
+		
 
 		# get the very first tuktuk that is free.
 		# In future we need a better way of identifying a tuktuk this method may be baised.
@@ -362,7 +379,7 @@ class Sms < ApplicationRecord
 		col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 
 
 		params = []
-		params << phone_number << current_location << tuktuk.id << status << sms_id
+		params << @phone_number << current_location << tuktuk.id << status << sms_id
 
 		save_params =  trip_req_params(params, col_name) 
 
@@ -373,7 +390,9 @@ class Sms < ApplicationRecord
 	end
 
 	def make_bajaji_trip_request
-		phone_number = self.phone_number
+		
+		standardize_sms
+
 		current_location = self.get_current_location
 		status = "waiting"
 		sms_id = self.id
@@ -388,7 +407,7 @@ class Sms < ApplicationRecord
 		col_name = ["phone_number", "location", "bajaj_id", "status", "sms_id"] 
 
 		params = []
-		params << phone_number << current_location << bajaji.id << status << sms_id
+		params << @phone_number << current_location << bajaji.id << status << sms_id
 
 		save_params =  trip_req_params(params, col_name) 
 

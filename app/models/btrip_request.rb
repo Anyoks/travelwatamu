@@ -87,6 +87,11 @@ class BtripRequest < ApplicationRecord
 		return phone_number
 	end
 
+	# makeing work easier
+	def trip
+		return self.btrip
+	end
+
 	protected
 
 
