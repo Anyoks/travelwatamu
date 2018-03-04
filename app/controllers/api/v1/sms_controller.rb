@@ -19,14 +19,12 @@ class Api::V1::SmsController < Api::V1::BaseController
 				# return true, customer_number, driver_plate, location, "tukutuku"
 				
 				render json: { sms: [ {
-					success: true, message: "#{result_array[4]} number plate: #{result_array[2]}
-											 yaja hapo #{result_array[3]}. Utapigiwa simu na dereva pia. Subiri kidogo...",
+					success: true, message: "#{result_array[4]} number plate: #{result_array[2]} yaja hapo #{result_array[3]}. Utapigiwa simu na dereva pia. Subiri kidogo...",
 								 phone_number: "#{result_array[1]}"
 				 	},
 
 					{
-					 	success: true, message: "Customer Number: #{result_array[1]}. Mpigie simu, amesama yuko #{result_array[3]}.
-												 Kazi kwako!",
+					 	success: true, message: "Customer Number: #{result_array[1]}. Mpigie simu, amesama yuko #{result_array[3]}. Kazi kwako!",
 					 				 phone_number: "#{@sms.phone_number}"
 					}
 
@@ -60,9 +58,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 					location = trip.get_current_location
 					customer_number = trip.get_customer_number
 
-					render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode}
-					 ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
-					 phone_number: "#{@driver_phone_number}"]}, status: :ok
+					render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
+					 phone_number: "#{customer_number}"]}, status: :ok
 
 				end
 
@@ -70,9 +67,9 @@ class Api::V1::SmsController < Api::V1::BaseController
 				# array size is 2
 				# there was an error. 
 				# send the driver that error message
-				# 
+				unkown_driiver = @sms.phone_number
 				render json: { sms: [success: false, message: "#{result_array[1]}",
-					 phone_number: "#{customer_number}"]}, status: :ok
+					 phone_number: "#{unkown_driiver}"]}, status: :ok
 				
 			end
 
@@ -95,8 +92,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 					# send message to both driver and customer
 
 					render json: { sms: [ {
-					success: true, message: "Asante. Umeagiza #{transport_mode}
-											 ikuchukue #{location}. Subiri kidogo...",
+					success: true, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. Subiri kidogo...",
 								 phone_number: "#{customer_number}"
 				 	},
 
@@ -110,18 +106,14 @@ class Api::V1::SmsController < Api::V1::BaseController
 				else
 					# trip request was not successful. maybe all drivers were busy
 					# maybe suggest another transport mode
-					render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode}
-					 ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidog",
+					render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidog",
 					 phone_number: "#{customer_number}"]}, status: :ok
 					
 				end
 			else
 				# there's an error with the sms
 				render json: { sms: [success: false,
-				message: "Ujumbe haujakamilika. Ungependa kuchukuliwa wapi?
-				Wataka Tukutuku au bajaji? Tafadhali tueleze pale ulipo na kama
-				wataka tukutuku au bajaji. Kwa Mafano kama ni Rich Land tuma:::  
-				Bajaji Rich Land au tukutuku Rich Land. Jaribu tena.",
+				message: "Ujumbe haujakamilika. Ungependa kuchukuliwa wapi? Wataka Tukutuku au bajaji? Tafadhali tueleze pale ulipo na kama wataka tukutuku au bajaji. Kwa Mafano kama ni Rich Land tuma:::Bajaji Rich Land au tukutuku Rich Land. Jaribu tena.",
 				phone_number: "#{@sms.phone_number}"]}, status: :ok
 				
 			end
