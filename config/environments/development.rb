@@ -55,5 +55,7 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   # devize mailer
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+
+  Rails.application.default_url_options = {host: 'miraclemanner.org', protocol: 'https' }
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 end

@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
  layout :layout_by_resource
+ # before_action :default_url_options
   before_action :authenticate_admin!
 
   # layout 'admin_lte_2'
@@ -11,6 +12,8 @@ class ApplicationController < ActionController::Base
 
 
 protected
+
+
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:first_name, :last_name, :email, :password, :password_confirmation])
@@ -44,5 +47,13 @@ protected
 	new_admin_session_path
 	end
    
+   def default_url_options
+    if Rails.env.production?
+      {:host => "miraclemanner.org",
+      	:protocol => "https"}
+    else  
+      {}
+    end
+  end
 	  
 end
