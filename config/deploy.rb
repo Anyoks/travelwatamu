@@ -5,6 +5,8 @@ set :application, "travelWatamu"
 set :repo_url, "git@bitbucket.org:dennOrina/travelwatamu.git"
 
 set :passenger_restart_with_touch, true
+
+set :pty, true
 ssh_options[:auth_methods] = ["publickey"]
 ssh_options[:keys] = ["/home/vagrant/.ssh/id_rsa"]
 
