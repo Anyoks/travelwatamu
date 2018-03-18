@@ -6,14 +6,6 @@ set :repo_url, "git@bitbucket.org:dennOrina/travelwatamu.git"
 
 set :passenger_restart_with_touch, true
 
-set :pty, true
-
-set :ssh_options, {
-  forward_agent: true,
-  auth_methods: ["publickey"],
-  keys: ["/home/vagrant/.ssh/id_rsa"]
-}
-
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
