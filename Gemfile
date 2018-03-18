@@ -51,9 +51,10 @@ group :development do
   gem 'spring-watcher-listen', '~> 2.0.0'
 
   # deployment
-   gem 'capistrano', '~> 3.5.0'
-  gem 'capistrano-rails', '~> 1.1.5'
-  gem 'capistrano-rvm', github: "capistrano/rvm"
+  gem "capistrano", "~> 3.10", require: false
+  gem 'capistrano-rvm', github: "capistrano/rvm", require: false
+  gem 'capistrano-rails', '~> 1.1.5', require: false
+  
   gem 'capistrano-passenger'
 
 end
