@@ -8,11 +8,6 @@ set :passenger_restart_with_touch, true
 
 set :pty, true
 
-
-for capistrano 3 the syntax is somewhat different
-
-set :pty, true
-
 set :ssh_options, {
   forward_agent: true,
   auth_methods: ["publickey"],
