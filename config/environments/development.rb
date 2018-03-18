@@ -45,6 +45,9 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
+  # for subdomains
+  config.action_dispatch.tld_length = 0
+
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
