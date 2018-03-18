@@ -17,7 +17,7 @@ install_plugin Capistrano::SCM::Git
 
 require 'capistrano/rvm'
 set :rvm_type, :user
-set :rvm_ruby_version, '2.5.0'
+set :rvm_ruby_version, '2.5.0p0'
 
 require 'capistrano/bundler'
 require 'capistrano/rails'
