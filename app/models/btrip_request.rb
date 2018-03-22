@@ -87,6 +87,12 @@ class BtripRequest < ApplicationRecord
 		return phone_number
 	end
 
+	def get_driver_first_name
+
+		first_name = self.bajaj.first_name
+		return first_name
+	end
+
 	# makeing work easier
 	def trip
 		return self.btrip

@@ -71,6 +71,12 @@ class TtripRequest < ApplicationRecord
 		return number
 	end
 
+	def get_driver_first_name
+
+		first_name = self.tuktuk.first_name
+		return first_name
+	end
+
 	def get_transport_mode
 
 		transport_mode =  self.sms.transport_mode

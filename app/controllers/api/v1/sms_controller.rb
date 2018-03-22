@@ -40,12 +40,13 @@ class Api::V1::SmsController < Api::V1::BaseController
 
 				# get phone number of the driver
 				@driver_phone_number = trip.get_driver_phone_number
+				driver_name = trip.get_driver_first_name
 
 				if trip
 					# send message to new driver
 					render json: { sms: [ 
 					{
-					 	success: true, message: "Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
+					 	success: true, message: "#{driver_name}, Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
 					 				 phone_number: "#{@driver_phone_number}"
 					}
 
@@ -86,6 +87,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 				customer_number = @sms.phone_number
 				transport_mode = trip.get_transport_mode
 				location = trip.get_current_location
+				driver_name = trip.get_driver_first_name
 
 				if trip
 					# trip request was successful
@@ -97,7 +99,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 				 	},
 
 					{
-					 	success: true, message: "Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la ",
+					 	success: true, message: "#{driver_name}, Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la ",
 					 				 phone_number: "#{driver_phone_number}"
 					}
 
