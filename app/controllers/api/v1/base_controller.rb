@@ -1,6 +1,7 @@
 class Api::V1::BaseController < ActionController::API
 	# before_action :authenticate_admin!
-
+	respond_to :json
+	
 	rescue_from ActionController::ParameterMissing do
 		api_error(status: 400, errors: 'Invalid parameters')
 	end
