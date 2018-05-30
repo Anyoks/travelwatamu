@@ -30,8 +30,8 @@ class Sms < ApplicationRecord
 	def standardize_sms
 		text_message  = self.message
 		phone_number = self.phone_number
-
-		@text_message  = text_message .upcase.downcase!
+		
+		@text_message  = text_message.upcase.downcase!
 		@phone_number = phone_number
 	end
 
@@ -66,20 +66,29 @@ class Sms < ApplicationRecord
 
 	def response_processing_for_tuktuk_driver
 		
+		# TODO
 		# check if he is just updating his status to free or busy or accepting a trip
 		# the key is in the sms if it contains niko busy or niko free
 		# 
-		# look for the sms trip request he is replying to 
+		 
+		# 
+		# TODO
 		# improvement would be to check the time as well because it could be a very old sms.
 		# or i can make a cron job to cacell all trips that take more thatn x mins to receice
 		# a response
-		
+		# 
+ 
+		# 
+		# look for the sms trip request he is replying to
 		request_sms = @driver.sms_ttrip_request.where(status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
+
 			# check the response first
-			if @text_message  == "yes" || @text_message  == "ndio"
+			response = check_driver_response @text_message
+
+			if response  == true
 				
 				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
 
@@ -97,10 +106,21 @@ class Sms < ApplicationRecord
 					trip = request_sms.start_trip
 
 					if trip
+						# Change driver availablity to false because the driver has accepted a trip.
+						# The driver after completing the trip can then text back to update their availability status
+						tuktuk = request_sms.ttrip_request.tuktuk
+						update_availabity = tuktuk.update_attributes(status: "false")
 
-					# we'll send the number & location to the driver 
-					# Number plate to the customer
-						return true, customer_number, driver_plate, location, "tukutuku"
+						if update_availabity
+							# 
+							# we'll send the number & location to the driver 
+							# Number plate to the customer
+							return true, customer_number, driver_plate, location, "tukutuku"
+						else
+							logger.debug "Error creating a new trip"
+							return false
+						end
+						
 					else
 						logger.debug "Error creating a new trip"
 						return false
@@ -109,7 +129,7 @@ class Sms < ApplicationRecord
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
 				end
-			elsif @text_message  == "no" || @text_message  == "la"
+			elsif response  == false
 				
 				cancel = request_sms.update_attributes(status: "cancelled")
 				if cancel
@@ -141,14 +161,15 @@ class Sms < ApplicationRecord
 
 	def response_processing_for_bajaj_driver
 
-		stripped_text = @text_message.gsub(/[[:space:]]/, '')
 		# check trip request by phone number
 		request_sms = @driver.sms_btrip_request.where(status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
 			# check the response first
-			if stripped_text  == "yes" || stripped_text  == "ndio"
+			response = check_driver_response @text_message
+
+			if response  == true
 				
 				success = request_sms.update_attributes(status: "success", received_sms: "#{self.message}")
 
@@ -177,7 +198,7 @@ class Sms < ApplicationRecord
 					logger.debug "error updating the status"
 					return false, "Samahani, tuma jibu lako tena tafadhali."
 				end
-			elsif stripped_text  == "no" || stripped_text == "la"
+			elsif response  == false
 				
 				cancel = request_sms.update_attributes(status: "cancelled")
 				if cancel
@@ -373,20 +394,32 @@ class Sms < ApplicationRecord
 		# get the very first tuktuk that is free.
 		# In future we need a better way of identifying a tuktuk this method may be baised.
 		# 
+		# Check if the driver is already on a trip
+		# 
+		# 
+		# 
 		# *****what if there's no free driver?
 		tuktuk = Tuktuk.where(status: true).first
 
-		col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 
+		if tuktuk
+			col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 
 
-		params = []
-		params << @phone_number << current_location << tuktuk.id << status << sms_id
+			params = []
+			params << @phone_number << current_location << tuktuk.id << status << sms_id
 
-		save_params =  trip_req_params(params, col_name) 
+			save_params =  trip_req_params(params, col_name) 
 
-		trip = TtripRequest.new(save_params)
-		trip.save
-		logger.debug "Made a Tuktuk Trip Request For customer"
-		return trip
+			trip = TtripRequest.new(save_params)
+			trip.save
+			logger.debug "Made a Tuktuk Trip Request For customer"
+
+			return trip
+		else
+			logger.debug "All drivers are busy"
+			return false, "All drivers are busy","Tuktuk"
+		end
+
+		
 	end
 
 	def make_bajaji_trip_request
@@ -404,17 +437,38 @@ class Sms < ApplicationRecord
 		# # *****what if there's no free driver?
 		bajaji = Bajaj.where(status: true).first
 
-		col_name = ["phone_number", "location", "bajaj_id", "status", "sms_id"] 
+		if bajaji
+			col_name = ["phone_number", "location", "bajaj_id", "status", "sms_id"] 
 
-		params = []
-		params << @phone_number << current_location << bajaji.id << status << sms_id
+			params = []
+			params << @phone_number << current_location << bajaji.id << status << sms_id
 
-		save_params =  trip_req_params(params, col_name) 
+			save_params =  trip_req_params(params, col_name) 
 
-		trip = BtripRequest.new(save_params)
-		trip.save
-		logger.debug "Made a Bajaj Trip Request For customer"
-		return trip	
+			trip = BtripRequest.new(save_params)
+			trip.save
+			logger.debug "Made a Bajaj Trip Request For customer"
+			return trip	
+		else
+			logger.debug "All drivers are busy"
+			return false, "All drivers are busy","Bajaji"
+		end
+		
+	end
+
+	# returns true or false based on whether the driver accepted or rejected the trip request.
+	def check_driver_response message
+		response = message
+
+		response = response.gsub(/[[:space:]]/, '')
+
+		if response == "yes" || response  == "ndio" || response == "sawa" || response == "sawasawa" || response == "poa" || response == "haya"
+			return true
+		elsif response == "no" || response  == "la" || response  == "hapana"
+			return false
+		else
+			return "wrong response"
+		end
 	end
 
 
