@@ -62,6 +62,13 @@ class BtripRequest < ApplicationRecord
 		save_params = btrip_params trip_params_array
 		new_trip = Btrip.new(save_params)
 		new_trip.save
+
+		# Make Driver availabilty to false.
+		# The driver after completing the trip can then text back to update their availability status or 
+		# TODO
+		# automatically update this after 30mins
+		self.tuktuk.update_attributes(status: "false")
+
 		return new_trip
 	end
 
