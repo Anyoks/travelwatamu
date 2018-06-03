@@ -21,4 +21,14 @@
 class Tuktuk < ApplicationRecord
 	has_many :ttrip_requests
 	has_many :sms_ttrip_request,  through: :ttrip_requests
+
+	def available?
+
+		if self.status == true
+			return true
+		else
+			return false
+		end
+		
+	end
 end

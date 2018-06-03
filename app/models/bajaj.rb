@@ -16,4 +16,14 @@
 class Bajaj < ApplicationRecord
 	has_many :btrip_requests
 	has_many :sms_btrip_request,  through: :btrip_requests
+
+	def available?
+
+		if self.status == true
+			return true
+		else
+			return false
+		end
+		
+	end
 end
