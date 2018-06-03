@@ -75,3 +75,5 @@ gem 'bootstrap-sass' #enables bootstrap in te app
 gem 'paperclip'
 # dealing with forms
 gem 'simple_form', '~> 3.5'
+# Pagination
+gem 'will_paginate', '~> 3.1.1'
