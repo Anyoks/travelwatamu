@@ -105,21 +105,11 @@ class Sms < ApplicationRecord
 					# make a new trip
 					trip = request_sms.start_trip
 
-					if trip
-						# Change driver availablity to false because the driver has accepted a trip.
-						# The driver after completing the trip can then text back to update their availability status
-						tuktuk = request_sms.ttrip_request.tuktuk
-						update_availabity = tuktuk.update_attributes(status: "false")
-
-						if update_availabity
-							# 
-							# we'll send the number & location to the driver 
-							# Number plate to the customer
-							return true, customer_number, driver_plate, location, "tukutuku"
-						else
-							logger.debug "Error creating a new trip"
-							return false
-						end
+					if trip											
+						# 
+						# we'll send the number & location to the driver 
+						# Number plate to the customer
+						return true, customer_number, driver_plate, location, "tukutuku"
 						
 					else
 						logger.debug "Error creating a new trip"
