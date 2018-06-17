@@ -389,7 +389,7 @@ class Sms < ApplicationRecord
 		# 
 		# 
 		# *****what if there's no free driver?
-		tuktuk = Tuktuk.where(status: true).first
+		tuktuk = Tuktuk.get_tuktuk_for_this_trip
 
 		if tuktuk
 			col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 

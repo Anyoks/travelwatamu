@@ -14,7 +14,7 @@
 
 # Status can be:
 # failed    - if the driver took too long to respond 
-# waiting   - if the message was not sent too long ago and a response is being awaited
+# waiting   - if the message was not sent too long ago and a response is being awaited 
 # success   - if the driver accepted the trip request
 # cancelled -  if the driver did not accept the trip 
 
@@ -105,7 +105,414 @@ class TtripRequest < ApplicationRecord
 		return self.ttrip
 	end
 
+	def successful_trips
+		# trips = Ttrip.where(ttrip_request_id: self.id, status: 'started')
+		trips = self.ttrip_requests.where(status: 'started')
+		total = trips.count
+
+		if total == 0
+			return total
+		else
+			return trips
+		end
+	end
+
+	
+
+	def responsiveness
+		last_3_days = TtripRequest.where(created_at: 3.days.ago..Time.now, id: self.id)
+		positive_response = last_3_days.where.not(status: 'failed').where.not(status: 'waiting')
+		count = positive_response.count
+
+		level = responsivenes_level count, last_3_days.count
+
+		score = get_score level 
+	end
+
+	def self.responsive_drivers
+		last_3_days = TtripRequest.where(created_at: 3.days.ago..Time.now)
+		positive_response = last_3_days.where.not(status: 'failed').where.not(status: 'waiting')
+		count = positive_response.count
+		byebug
+		# list_of_responsive_drivers should look like this dennis KBB WEWE => 5
+		details = []
+		score = []
+
+		if count == 0
+			return 0
+		else
+			positive_response.each do |req|
+				resp = req.responsiveness
+				# byebug
+				
+				first_name = req.tuktuk.id
+				number_plate = req.tuktuk.number_plate
+				details << first_name + " " + number_plate
+				score << resp
+			end
+
+			list_of_responsive_drivers = Hash[*details.zip(score).flatten]
+			# level = responsivenes_level count, last_3_days.count
+
+			# score = get_score level 
+			return list_of_responsive_drivers
+		end
+	end
+
+######################
+#
+# TODO
+# change waiting to failed in an hour. create cron job
+
+######################
+
+	def self.requests_today
+		requests =TtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day)
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	# #######################################################################
+	# 														                #
+	# CANCELLED/ SUCCESSFUL/ FAILED/ WAITING REQUESTS (today, week, month ) #
+	# 														                #
+	# #######################################################################
+	# ths gets all requests, failed or successful
+	def requests_today
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day)
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def self.waiting_requests_today
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'waiting')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def self.success_requests_today
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def failed_requests_today
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	# check number of completed requests today
+	
+	def self.completed_requests_today
+
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def completed_requests_today
+
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	# check number of failed requests today
+	
+	def self.failed_requests_today
+
+		requests = SmsTtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def failed_requests_today
+
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	# Check started Trips today
+	# 
+	def self.cancelled_requests_today
+
+		
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def cancelled_requests_today
+
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	#****THIS WEEK******#
+	
+	# check Number of started requests this week
+	def self.week_success_requests
+		
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_success_requests
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	# check Numnber of failed requests this week
+	def self.week_failed_requests
+		
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "failed")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_failed_requests
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "failed")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	def self.week_cancelled_requests
+
+		
+		requests = TtripRequest.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_cancelled_requests
+
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+	
+	#********THIS MONTH************#
+	#
+	#
+	def self.month_success_requests
+		requests =  TtripRequest.where(created_at: 1.month.ago..Time.zone.now, status: "success").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def month_success_requests
+		requests =  self.where(created_at: 1.month.ago..Time.zone.now, status: "success").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def self.month_failed_requests
+		requests = TtripRequest.where(created_at: 1.month.ago..Time.zone.now, status: "failed").count
+		total = requests.count
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_failed_requests
+		requests = self.where(created_at: 1.month.ago..Time.zone.now, status: "failed").count
+		total = requests.count
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def self.month_cancelled_requests
+		requests = TtripRequest.where(created_at: 1.month.ago..Time.zone.now, status: "cancelled").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_cancelled_requests
+		requests = self.where(created_at: 1.month.ago..Time.zone.now, status: "cancelled").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	######################
+	
+
 protected
+
+	# (positive response/total reequestst) * 100%
+
+	def get_score level
+
+		if level >=80
+			p "very responsive"
+			score = 4
+			return score
+
+		elsif level >=50 && level <=79
+			p "responsive"
+			score = 3
+			return score
+
+		elsif level >=30 && level <=49
+			p "moderately reponsive"
+			score = 2
+			return score
+
+		elsif level >=10 && level <=29
+			p "Partially responsive"
+			score = 1
+			return score
+
+		elsif level < 10 && level > 2
+			p "Least responsive"
+			score = 0.5
+			return score
+
+		else #less than 1
+			#not responsive
+			p "Not responsive"	
+			score = 0
+			return score
+		end	
+	end
+
+	def responsivenes_level(positive_responses, total_requests)
+		positive = positive_responses
+		total = total_requests
+
+		level = (positive / total) * 100
+
+		return level
+	end
 
 	def ttrip_request_params data
 		name = ["phone_number", "sent_sms", "ttrip_request_id", "received_sms", "status"] 

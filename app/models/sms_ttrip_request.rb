@@ -60,5 +60,228 @@ class SmsTtripRequest < ApplicationRecord
 			return false
 		end
 	end
+
+##########################################
+	def requests_today
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day)
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	# check number of completed requests today
 	
+	def self.completed_requests_today
+
+		requests = SmsTtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def completed_requests_today
+
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	# check number of failed requests today
+	
+	def self.failed_requests_today
+
+		requests = SmsTtripRequest.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def failed_requests_today
+
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	# Check started Trips today
+	# 
+	def cancelled_requests_today
+
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	#****THIS WEEK******#
+	
+	# check Number of started requests this week
+	def week_success_requests
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	# check Numnber of failed requests this week
+	def week_failed_requests
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "failed")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	def week_cancelled_requests
+
+		
+		requests = self.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+	
+	#********THIS MONTH************#
+	#
+	#
+	def month_success_requests
+		requests =  self.where(created_at: 1.month.ago..Time.zone.now, status: "success").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def month_failed_requests
+		requests = self.where(created_at: 1.month.ago..Time.zone.now, status: "failed").count
+		total = requests.count
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_cancelled_requests
+		requests = self.where(created_at: 1.month.ago..Time.zone.now, status: "cancelled").count
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+	# 
+	# check Number of completed requests all time
+	# 
+	# 
+	
+	# 
+	# 
+	# Check Number of completed requests this month
+	# 
+	# 
+	
+	# 
+	# 
+	# check Number of failed requests all time
+	# 
+	# 
+	
+	# 
+	# 
+	# Check Number of  failed requests this month
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	# Check current request (status waiting) sms_ttrip_request.currently?
+	# 
+	# 
+	# check Number of successful requests today
+	# 
+	# 
+	# Check Number of seccessful requests this week
+	# 
+	# 
+	# Check Number of successful requests this month
+	# 
+	# 
+	# check Number of cancelled requests today
+	# 
+	# 
+	# Check Number of cancelled requests this week
+	# 
+	# 
+	# Check Number of cancelled requests this month
+	# 
+	
+	# check Number of failed requests today
+	# 
+	# 
+	# Check Number of failed requests this week
+	# 
+	# 
+	# Check Number of failed requests this month
 end
