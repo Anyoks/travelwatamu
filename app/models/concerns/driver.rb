@@ -6,23 +6,32 @@ module Driver
 	end
 
 	module ClassMethods
-		def get_tuktuk_for_this_trip
+		def get_driver_for_this_trip
 
 			# availability (2) + no Trips (1) + responsiveness (4) + completed trips (3)  = score (10)
 			
-			available_tuktuks = self.available # score 1
-			score_level_2 = self.trips_today available_tuktuks # score 2
+			available_drivers = self.available # score 1
 
-			score_level_3 = self.get_responsiveness_for_list score_level_2 # score 4
-			score_level_4 = get_completed_trips_for_list score_level_3 #score 3
+			# what if there's no free driver?
+			if available_drivers.size == 0
+				logger.debug "Could not find available drivers"
 
-			sorted_list = score_level_4.sort {|a,b| a[1]<=>b[1]}.reverse #in desc from highest to lowest
+				# TODO , SELECT DRIVER WHOSE TRIP IS ABOUT TO END, MAYBE?
+				return false
+			else
+				score_level_2 = self.trips_today available_drivers # score 2
 
-			top = sorted_list[0][0] # we will send the driver that is top of the list
+				score_level_3 = self.get_responsiveness_for_list score_level_2 # score 4
+				score_level_4 = get_completed_trips_for_list score_level_3 #score 3
 
-			driver = self.find(top)
-			
-			return driver
+				sorted_list = score_level_4.sort {|a,b| a[1]<=>b[1]}.reverse #in desc from highest to lowest
+
+				top = sorted_list[0][0] # we will send the driver that is top of the list
+
+				driver = self.find(top)
+				
+				return driver
+			end
 		end
 
 		def trips_today tuktuks

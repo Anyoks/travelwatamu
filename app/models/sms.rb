@@ -80,7 +80,7 @@ class Sms < ApplicationRecord
  
 		# 
 		# look for the sms trip request he is replying to
-		request_sms = @driver.sms_ttrip_request.where(status: "waiting").first
+		request_sms = @driver.sms_ttrip_request.where( created_at: 10.minutes.ago..Time.zone.now , status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
@@ -388,8 +388,8 @@ class Sms < ApplicationRecord
 		# 
 		# 
 		# 
-		# *****what if there's no free driver?
-		tuktuk = Tuktuk.get_tuktuk_for_this_trip
+		
+		tuktuk = Tuktuk.get_driver_for_this_trip
 
 		if tuktuk
 			col_name = ["phone_number", "location", "tuktuk_id", "status", "sms_id"] 
