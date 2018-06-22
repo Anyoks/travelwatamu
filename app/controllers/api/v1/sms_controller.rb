@@ -111,7 +111,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 					# trip request was not successful. maybe all drivers were busy
 					# maybe suggest another transport mode
 					render json: { sms: [success: false, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
-					 phone_number: "#{customer_number}"]}, status: :ok
+					 phone_number: "#{@sms.phone_number}"]}, status: :ok
 					
 				end
 			else
