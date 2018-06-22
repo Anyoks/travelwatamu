@@ -214,5 +214,353 @@ module Driver
 
 		end
 
+		def responsive_drivers
+			if self.class == "Tuktuk"
+				list_of_responsive_drivers = TtripRequest.responsive_drivers
+			else
+				list_of_responsive_drivers = BtripRequest.responsive_drivers
+			end
+			
+			return list_of_responsive_drivers
+		end
+
 	end
+
+	def make_available
+		self.update_attributes(status: true)
+	end
+
+	def trip_requests
+		if self.class.name == "Tuktuk"
+			self.ttrip_requests
+		else
+			self.btrip_requests
+		end
+	end
+
+	def trips
+		if self.class.name == "Tuktuk"
+			self.ttrips
+		else
+			self.btrips
+		end
+	end
+
+	# returns successful trips. Similar to responsiveness
+	def successful_trips
+		success_trips = self.trip_requests.where(status: 'success')
+	end
+
+	# Returns completed trips
+	def completed_trips
+		trips = self.trips.where(status: 'started')
+		total = trips.count
+
+		if total == 0
+			return total
+		else
+			return trips
+		end
+	end
+
+	def responsiveness
+		last_3_days = self.trip_requests.where(created_at: 3.days.ago..Time.now)
+		positive_response = last_3_days.where.not(status: 'failed').where.not(status: 'waiting')
+		count = positive_response.count
+
+		level = self.class.responsivenes_level count, last_3_days.count
+
+		score = self.class.get_score level, "responsiveness" 
+		return score
+	end
+
+	# #######################################################################
+	# 														                #
+	# CANCELLED/ SUCCESSFUL/ FAILED/ WAITING REQUESTS (today, week, month ) #
+	# 														                #
+	# #######################################################################
+	# ths gets all requests, failed or successful
+	def requests_today
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day)
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def waiting_requests_today
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'waiting')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	# this method accepts true or false to return data or just count.
+	def success_requests_today(args) 
+
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+		
+		if  :false
+			if total == 0
+				return total
+			else
+				return requests.count
+			end
+		elsif :true
+			
+			puts "this si it" #args[:data]
+			return requests
+		else
+			if total == 0
+				return total
+			else
+				return requests.count
+			end
+		end
+	end
+
+	def failed_requests_today
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	# check number of completed requests today
+	
+	def completed_requests_today
+
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'success')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	# check number of failed requests today
+	
+	def failed_requests_today
+
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def failed_requests_today
+
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'failed')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	# Check started Trips today
+	# 
+	def cancelled_requests_today
+
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def cancelled_requests_today
+
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	#****THIS WEEK******#
+	
+	# check Number of started requests this week
+	def week_success_requests
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_success_requests
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	# check Numnber of failed requests this week
+	def week_failed_requests
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "failed")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_failed_requests
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now,  status: "failed")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+
+	def week_cancelled_requests
+
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def week_cancelled_requests
+
+		
+		requests = self.trip_requests.where(created_at: Time.zone.now.beginning_of_week..Time.zone.now, status: 'cancelled')
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+	
+	#********THIS MONTH************#
+	#
+	#
+	def month_success_requests
+		requests =  self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def month_success_requests
+		requests =  self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "success")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+	end
+
+	def month_failed_requests
+		requests = self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "failed")
+		total = requests.count
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_failed_requests
+		requests = self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "failed")
+		total = requests.count
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_cancelled_requests
+		requests = self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "cancelled")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	def month_cancelled_requests
+		requests = self.trip_requests.where(created_at: 1.month.ago..Time.zone.now, status: "cancelled")
+		total = requests.count
+
+		if total == 0
+			return total
+		else
+			return requests
+		end
+		
+	end
+
+	######################
+
 end

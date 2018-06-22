@@ -16,6 +16,11 @@
 class Bajaj < ApplicationRecord
 	has_many :btrip_requests
 	has_many :sms_btrip_request,  through: :btrip_requests
+	has_many :btrips,  through: :btrip_requests
+
+	scope :available, -> { where(status: true)}
+
+	include Driver
 
 	def available?
 
@@ -26,4 +31,12 @@ class Bajaj < ApplicationRecord
 		end
 		
 	end
+
+	# def trip_request
+	# 	self.btrip_requests
+	# end
+
+	protected
+
+	
 end
