@@ -31,6 +31,7 @@ class BtripRequest < ApplicationRecord
 	# when the driver responds, then the status of this trip request will change from waiting to success
 	# if the driver accepted etc as explained above.
 	
+	include Triprequest
 
 	# this method is triggered from the sms controller when a trip request is successfully made
 	# this method is called after the trip request is saved in the dB
@@ -71,40 +72,7 @@ class BtripRequest < ApplicationRecord
 
 		return new_trip
 	end
-
-	def get_driver_phone_number
-
-		number = self.bajaj.phone_number
-		return number
-	end
-
-	def get_transport_mode
-
-		transport_mode =  self.sms.transport_mode
-		return transport_mode
-	end
-
-	def get_current_location
-		location = self.sms.current_location
-		return location
-	end
-
-	def get_customer_number
-		phone_number = self.phone_number
-		return phone_number
-	end
-
-	def get_driver_first_name
-
-		first_name = self.bajaj.first_name
-		return first_name
-	end
-
-	# makeing work easier
-	def trip
-		return self.btrip
-	end
-
+	
 	protected
 
 
