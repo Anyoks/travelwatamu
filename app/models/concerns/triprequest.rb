@@ -22,9 +22,14 @@ module Triprequest
 				positive_response.each do |req|
 					resp = req.responsiveness
 					# byebug
-					
-					first_name = req.tuktuk.id
-					number_plate = req.tuktuk.number_plate
+					if req.class.name == "Tuktuk"
+						first_name = req.tuktuk.id
+						number_plate = req.tuktuk.number_plate
+					else
+						irst_name = req.bajaj.id
+						number_plate = req.bajaj.number_plate
+					end
+
 					details << first_name + " " + number_plate
 					score << resp
 				end
@@ -292,14 +297,23 @@ module Triprequest
 	end
 
 	def get_driver_phone_number
-
-		number = self.tuktuk.phone_number
+		if self.class.name == "BtripRequest"
+			number = self.bajaj.phone_number
+		else
+			number = self.tuktuk.phone_number
+		end
+		
 		return number
 	end
 
 	def get_driver_first_name
 
-		first_name = self.tuktuk.first_name
+		if self.class.name == "BtripRequest"
+			first_name = self.bajaj.first_name
+		else
+			first_name = self.tuktuk.first_name
+		end
+
 		return first_name
 	end
 
@@ -322,6 +336,13 @@ module Triprequest
 		end
 	end
 
-	
+	# getting sms_ttrip_request or sms_btrip_request
+	def sms_trip_request
+		if self.class.name == "TtripRequest" 
+			self.sms_ttrip_request
+		else
+			self.sms_btrip_request
+		end
+	end
 
 end

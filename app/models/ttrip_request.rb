@@ -77,64 +77,14 @@ class TtripRequest < ApplicationRecord
 #
 # TODO
 # change waiting to failed in an hour. create cron job
+# when this changes to failed, a new trip request should be made.
+# 
+# 
+# what  if a customer makes two simulitaneous trip requests?
+# add a mechanism to detect that and respond appropriately to the customer.
 
-######################
-
-	
-
-	######################
-	
 
 protected
-
-	# (positive response/total reequestst) * 100%
-
-	# def get_score level
-
-	# 	if level >=80
-	# 		p "very responsive"
-	# 		score = 4
-	# 		return score
-
-	# 	elsif level >=50 && level <=79
-	# 		p "responsive"
-	# 		score = 3
-	# 		return score
-
-	# 	elsif level >=30 && level <=49
-	# 		p "moderately reponsive"
-	# 		score = 2
-	# 		return score
-
-	# 	elsif level >=10 && level <=29
-	# 		p "Partially responsive"
-	# 		score = 1
-	# 		return score
-
-	# 	elsif level < 10 && level > 2
-	# 		p "Least responsive"
-	# 		score = 0.5
-	# 		return score
-
-	# 	else #less than 1
-	# 		#not responsive
-	# 		p "Not responsive"	
-	# 		score = 0
-	# 		return score
-	# 	end	
-	# end
-
-	# def responsivenes_level(positive_responses, total_requests)
-	# 	positive = positive_responses
-	# 	total = total_requests
-
-	# 	if total > 0
-
-	# 		level = (positive / total) * 100
-	# 	else
-	# 		return 0
-	# 	end
-	# end
 
 	def ttrip_request_params data
 		name = ["phone_number", "sent_sms", "ttrip_request_id", "received_sms", "status"] 

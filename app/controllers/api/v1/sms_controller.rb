@@ -107,11 +107,20 @@ class Api::V1::SmsController < Api::V1::BaseController
 					]}, status: :ok
 
 				else
-					transport_mode = trip[2]
+					
 					# trip request was not successful. maybe all drivers were busy
-					# maybe suggest another transport mode
-					render json: { sms: [success: false, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
+					# TODO: maybe suggest another transport mode
+					transport_mode = trip[2]
+					if trip[0]
+							# transport_mode = trip[2]
+							render json: { sms: [success: false, rcv: "customer", message: "Asante.Tumepokea Ujumbe wako. #{transport_mode} itatumwa sasa hivi, subiri kidogo",
+						 phone_number: "#{@sms.phone_number}"]}, status: :ok
+					else
+						# transport_mode = trip[2]
+						render json: { sms: [success: false, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
 					 phone_number: "#{@sms.phone_number}"]}, status: :ok
+					end
+					
 					
 				end
 			else

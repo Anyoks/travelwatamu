@@ -12,8 +12,8 @@
 #
 
 class Sms < ApplicationRecord
-	has_many :ttrip_request
-	has_many :btrip_request
+	has_one :ttrip_request
+	has_one :btrip_request
 
 	# attr_reader :text_message
 	# attr_reader :phone_number
@@ -355,20 +355,30 @@ class Sms < ApplicationRecord
 	end
 
 	def make_trip_request
-		# if transport mode is tuktuk
-		if self.get_transport_mode == "tukutuku"
-			request_trip = self.make_tuk_tuk_trip_request
-			return request_trip
 
-		elsif self.get_transport_mode == "bajaji"
+		doubleReqCheck = check_if_double_request
+		if doubleReqCheck.class.name == "Array"
+			# tell the user we are already processing your initial request.
+			logger.debug "System is processing a similar request, telling user to wait..."
+			return true, "We received your previous request, a driver will be sent right away", doubleReqCheck[1]
 			
-		# if transport mode is bajaj
-			request_trip = self.make_bajaji_trip_request
-			return request_trip
 		else
-			logger.debug "Could not get trasport Mode"
-			return false
+			# if transport mode is tuktuk
+			if self.get_transport_mode == "tukutuku"
+				request_trip = self.make_tuk_tuk_trip_request
+				return request_trip
+
+			elsif self.get_transport_mode == "bajaji"
+				
+			# if transport mode is bajaj
+				request_trip = self.make_bajaji_trip_request
+				return request_trip
+			else
+				logger.debug "Could not get trasport Mode"
+				return false
+			end
 		end
+		
 	end
 
 	def make_tuk_tuk_trip_request
@@ -444,6 +454,63 @@ class Sms < ApplicationRecord
 			return false, "All drivers are busy","Bajaji"
 		end
 		
+	end
+
+	# some impatient customers may make double trip requests.
+	# lets stop two drivers from meeting the same customer.
+	def check_if_double_request
+		phone_number = self.phone_number
+
+		sms = Sms.where(created_at: 10.minutes.ago..Time.zone.now, phone_number: phone_number)
+
+		if sms.present?
+			# yes the customer just requested another driver in less than 10 minutes
+			#check if a driver was found and tell customer to wait for them.
+			tripReqStatus = sms.trip_request.status
+			tripTransMode = sms.trip_request.get_transport_mode
+
+			if tripReqStatus == "success"
+				# yes, a driver has responded to the reques but for some reason the user has not
+				# received the confirmatin sms? 
+				return true, tripTransMode
+			elsif tripReqStatus == "failed"
+				# the driver took too long to respond let the user make a new trip request
+				# If the system already did this, we will findout.
+				return false
+			end
+		else
+			# nope this is a new ride req
+			return false
+		end
+	end
+
+
+	# returns the triprequest associated with that sms.
+	# Only used for customer smses.
+	def trip_request
+
+		if self.btrip_request.present?
+
+			logger.debug "This is Bajaj trip request"
+			return self.btrip_request
+
+		elsif self.ttrip_request.present?
+
+			logger.debug "This is Tuktuk trip request"
+			return self.ttrip_request
+		else
+			if self.transport_mode.present?
+
+				logger.debug "This customer did not get a driver"
+				return false
+			else
+
+				logger.debug "This is not a customer sms"
+				return false
+				
+			end
+		
+		end
 	end
 
 	# returns true or false based on whether the driver accepted or rejected the trip request.
