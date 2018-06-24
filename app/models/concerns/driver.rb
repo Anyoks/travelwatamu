@@ -10,7 +10,7 @@ module Driver
 
 			# availability (2) + no Trips (1) + responsiveness (4) + completed trips (3)  = score (10)
 			
-			available_drivers = self.available # score 1
+			available_drivers = self.available_for_trips # score 1
 
 			# what if there's no free driver?
 			if available_drivers.size == 0
@@ -32,6 +32,21 @@ module Driver
 				
 				return driver
 			end
+		end
+
+		# this returns only drivers that are available and that don't have pending trip requests in the last
+		# 1 min
+		def available_for_trips
+			available_drivers = self.available
+
+			availableForTrip = []
+			available_drivers.each do |driver|
+				tripReq = driver.trip_requests.where(created_at: 1.minute.ago..Time.zone.now, status: "waiting").count
+				if tripReq == 0
+					availableForTrip << driver
+				end
+			end
+			return availableForTrip
 		end
 
 		def trips_today tuktuks
@@ -161,8 +176,8 @@ module Driver
 		end
 
 		def get_responsiveness id
-			tuktuk = self.find(id)
-			last_3_days = tuktuk.ttrip_requests.where(created_at: 3.days.ago..Time.now)
+			driver = self.find(id)
+			last_3_days = driver.trip_requests.where(created_at: 3.days.ago..Time.now)
 			positive_response = last_3_days.where.not(status: 'failed').where.not(status: 'waiting')
 			count = positive_response.count
 
@@ -173,9 +188,9 @@ module Driver
 		end
 
 		def get_completed_trips id
-			tuktuk = self.find(id)
-			last_3_days = tuktuk.ttrip_requests.where(created_at: 3.days.ago..Time.now)
-			completed_trips = tuktuk.ttrips.where(status: 'started')
+			driver = self.find(id)
+			last_3_days = driver.trip_requests.where(created_at: 3.days.ago..Time.now)
+			completed_trips = driver.trips.where(status: 'started')
 			total = completed_trips.count
 
 			level = responsivenes_level completed_trips.count, total
@@ -199,7 +214,7 @@ module Driver
 			details = []
 			total = []
 			self.all.each do |tuk|
-				trips = tuk.ttrips.where(status: 'started') # change this ot completed when we implement driver complete 
+				trips = tuk.trips.where(status: 'started') # change this ot completed when we implement driver complete 
 				driver_name = tuk.first_name
 				number_plate = tuk.number_plate
 				total_trips = trips.count
@@ -222,6 +237,15 @@ module Driver
 			end
 			
 			return list_of_responsive_drivers
+		end
+
+		# make x drivers available
+		def make_available x
+			drivers = self.all.limit(x)
+
+			drivers.each do |driver|
+				driver.update_attributes(status: true)
+			end
 		end
 
 	end

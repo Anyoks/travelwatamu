@@ -250,21 +250,35 @@ class Sms < ApplicationRecord
 
 		standardize_sms
 
-		stripped_text = @text_message.gsub(/[[:space:]]/, '')
+		# stripped_text = @text_message.gsub(/[[:space:]]/, '')
 
-		if stripped_text    == "ndio" || stripped_text  == "yes"
-			logger.debug "This is a driver"
+		# if stripped_text    == "ndio" || stripped_text  == "yes"
+		# 	logger.debug "This is a driver"
 
-			return true
-			# check trip request by phone number
-		elsif stripped_text  == "la" || stripped_text   == "no"
+		# 	return true
+		# 	# check trip request by phone number
+		# elsif stripped_text  == "la" || stripped_text   == "no"
+		# 	logger.debug "This is a driver"
+		# 	return true
+		# 	# check trip request
+		# else
+		# 	logger.debug "This is a customer"
+		# 	return false
+		# end	
+
+
+		response = @text_message.gsub(/[[:space:]]/, '')
+
+		if response == "yes" || response  == "ndio" || response == "sawa" || response == "sawasawa" || response == "poa" || response == "haya"
 			logger.debug "This is a driver"
 			return true
-			# check trip request
+		elsif response == "no" || response  == "la" || response  == "hapana"
+			logger.debug "This is a driver"
+			return true
 		else
 			logger.debug "This is a customer"
 			return false
-		end			
+		end		
 	end
 
 
@@ -357,6 +371,7 @@ class Sms < ApplicationRecord
 	def make_trip_request
 
 		doubleReqCheck = check_if_double_request
+		# byebug
 		if doubleReqCheck.class.name == "Array"
 			# tell the user we are already processing your initial request.
 			logger.debug "System is processing a similar request, telling user to wait..."
@@ -435,7 +450,7 @@ class Sms < ApplicationRecord
 		# 
 		# 
 		# # *****what if there's no free driver?
-		bajaji = Bajaj.where(status: true).first
+		bajaji = Bajaj.get_driver_for_this_trip
 
 		if bajaji
 			col_name = ["phone_number", "location", "bajaj_id", "status", "sms_id"] 
@@ -461,22 +476,37 @@ class Sms < ApplicationRecord
 	def check_if_double_request
 		phone_number = self.phone_number
 
-		sms = Sms.where(created_at: 10.minutes.ago..Time.zone.now, phone_number: phone_number)
-
+		sms = Sms.where(created_at: 10.minutes.ago..Time.zone.now, phone_number: phone_number).first
+		# byebug
+		# 
+		# 
+		# TODO
+		# 
+		# CHECK IF CUSTOMER IS ASKING FOR A TUK AND BAJ AT THE SAME TIME
 		if sms.present?
 			# yes the customer just requested another driver in less than 10 minutes
 			#check if a driver was found and tell customer to wait for them.
-			tripReqStatus = sms.trip_request.status
-			tripTransMode = sms.trip_request.get_transport_mode
+			tripReq = sms.trip_request
 
-			if tripReqStatus == "success"
-				# yes, a driver has responded to the reques but for some reason the user has not
-				# received the confirmatin sms? 
-				return true, tripTransMode
-			elsif tripReqStatus == "failed"
-				# the driver took too long to respond let the user make a new trip request
-				# If the system already did this, we will findout.
+			if tripReq == false
+				logger.debug "No trip Request for this customer sms"
 				return false
+			else
+				tripReqStatus = sms.trip_request.status
+				tripTransMode = sms.trip_request.get_transport_mode
+
+				if tripReqStatus == "success"
+					# yes, a driver has responded to the reques but for some reason the user has not
+					# received the confirmatin sms? 
+					return true, tripTransMode
+				elsif tripReqStatus == "waiting"
+
+					return true, tripTransMode
+				elsif tripReqStatus == "failed"
+					# the driver took too long to respond let the user make a new trip request
+					# If the system already did this, we will findout.
+					return false
+				end
 			end
 		else
 			# nope this is a new ride req

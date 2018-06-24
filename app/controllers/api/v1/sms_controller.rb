@@ -83,7 +83,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 				# there's no error
 				# make_trip request
 				trip = sms.make_trip_request	
-
+				# byebug
 				if trip.class != Array
 					# trip request was successful
 					# send message to both driver and customer
@@ -100,7 +100,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 				 	},
 
 					{
-					 	success: true, rcv: "driver", message: "#{driver_name}, Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la ",
+					 	success: true, rcv: "driver", message: "#{driver_name}, Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la. uko na sekunde 60. ",
 					 				 phone_number: "#{driver_phone_number}"
 					}
 
