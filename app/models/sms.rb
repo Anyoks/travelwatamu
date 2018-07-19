@@ -64,6 +64,24 @@ class Sms < ApplicationRecord
 			end		
 	end
 
+	# this will return true or false. if the customer is cancelling a trip request or requesting
+	# a new one.
+	def is_this_a_cancel_trip_request
+		standardize_sms
+		# split the message in to words
+		words = @text_message.scan (/\w+/)
+		terms = ["stop"]
+
+		regex = /#{terms.join("|")}/
+
+		# check if the users's response contains the word stop
+		if regex === @text_message 
+			return true
+		else
+			return false
+		end
+	end
+
 	def response_processing_for_tuktuk_driver
 		
 		# TODO
@@ -250,23 +268,6 @@ class Sms < ApplicationRecord
 
 		standardize_sms
 
-		# stripped_text = @text_message.gsub(/[[:space:]]/, '')
-
-		# if stripped_text    == "ndio" || stripped_text  == "yes"
-		# 	logger.debug "This is a driver"
-
-		# 	return true
-		# 	# check trip request by phone number
-		# elsif stripped_text  == "la" || stripped_text   == "no"
-		# 	logger.debug "This is a driver"
-		# 	return true
-		# 	# check trip request
-		# else
-		# 	logger.debug "This is a customer"
-		# 	return false
-		# end	
-
-
 		response = @text_message.gsub(/[[:space:]]/, '')
 
 		if response == "yes" || response  == "ndio" || response == "sawa" || response == "sawasawa" || response == "poa" || response == "haya"
@@ -370,9 +371,9 @@ class Sms < ApplicationRecord
 
 	def make_trip_request
 
-		doubleReqCheck = check_if_double_request
+		doubleReqCheck = self.check_if_double_request
 		# byebug
-		if doubleReqCheck.class.name == "Array"
+		if doubleReqCheck[0]
 			# tell the user we are already processing your initial request.
 			logger.debug "System is processing a similar request, telling user to wait..."
 			return true, "We received your previous request, a driver will be sent right away", doubleReqCheck[1]
@@ -393,6 +394,7 @@ class Sms < ApplicationRecord
 				return false
 			end
 		end
+		# return doubleReqCheck
 		
 	end
 
@@ -471,14 +473,46 @@ class Sms < ApplicationRecord
 		
 	end
 
+	def cancel_trip_request
+		# send driver and customer a cancel message
+		# update trip request to cancelled.
+		phone_number = self.phone_number
+
+		sms = Sms.where(created_at: 10.minutes.ago..Time.zone.now, phone_number: phone_number).first
+
+		if sms.present?
+			# yes the customer just requested another driver in less than 10 minutes
+			#check if a driver was found and tell customer to wait for them.
+			tripReq = sms.trip_request
+			transport_mode = sms.transport_mode
+
+			if tripReq == false
+				# you cannot cancel a trip you haven't yet initiated
+				logger.debug "Cannot find trip request to cancel"
+				return false, "You haven't requested a trip", transport_mode
+			else
+				# cancel this trip
+				logger.debug "Cancelling trip"
+				cancel_trip = tripReq.cancel_trip
+				logger.debug "Trip Cancelled"
+				return cancel_trip
+			end
+		else
+			# nope this is a new ride req
+			logger.debug "Cannot find sms request."
+			return false, "You haven't requested a trip."
+		end
+		
+	end
+
 	# some impatient customers may make double trip requests.
 	# lets stop two drivers from meeting the same customer.
 	def check_if_double_request
 		phone_number = self.phone_number
 
-		sms = Sms.where(created_at: 10.minutes.ago..Time.zone.now, phone_number: phone_number).first
-		# byebug
-		# 
+		sms = Sms.where(phone_number: phone_number, created_at: 10.minutes.ago..Time.zone.now).order("created_at DESC").first
+		byebug
+		logger.debug "CHECKING IF THIS IS A DOUBLE REQUEST"
 		# 
 		# TODO
 		# 
@@ -486,31 +520,42 @@ class Sms < ApplicationRecord
 		if sms.present?
 			# yes the customer just requested another driver in less than 10 minutes
 			#check if a driver was found and tell customer to wait for them.
+			
 			tripReq = sms.trip_request
+			logger.debug "SMS ID calling object #{sms.id}"
 
-			if tripReq == false
-				logger.debug "No trip Request for this customer sms"
-				return false
-			else
+			if tripReq.present? 
+				
 				tripReqStatus = sms.trip_request.status
 				tripTransMode = sms.trip_request.get_transport_mode
 
 				if tripReqStatus == "success"
 					# yes, a driver has responded to the reques but for some reason the user has not
 					# received the confirmatin sms? 
+					byebug
+					# update this sms and  mark it as duplicate request
+					sms.update_attributes(duplicate: true)
 					return true, tripTransMode
+
 				elsif tripReqStatus == "waiting"
 
 					return true, tripTransMode
 				elsif tripReqStatus == "failed"
 					# the driver took too long to respond let the user make a new trip request
 					# If the system already did this, we will findout.
-					return false
+					return false, "no trip"
+				elsif tripReqStatus == "cancelled"
+					return false, "cancelled trip"
+				else
+					return false, "Unknown error"
 				end
+			else
+				logger.debug "No trip Request for this customer sms"
+				return false, "no trip"
 			end
 		else
 			# nope this is a new ride req
-			return false
+			return false, "no trip"
 		end
 	end
 
@@ -518,27 +563,22 @@ class Sms < ApplicationRecord
 	# returns the triprequest associated with that sms.
 	# Only used for customer smses.
 	def trip_request
-
-		if self.btrip_request.present?
-
+		bajaj = self.btrip_request.present?
+		tuktuk = self.ttrip_request.present?
+		logger.debug "SMS ID self object #{self.id}"
+		byebug
+		if bajaj
 			logger.debug "This is Bajaj trip request"
 			return self.btrip_request
 
-		elsif self.ttrip_request.present?
+		elsif tuktuk
 
 			logger.debug "This is Tuktuk trip request"
 			return self.ttrip_request
 		else
-			if self.transport_mode.present?
-
-				logger.debug "This customer did not get a driver"
-				return false
-			else
-
-				logger.debug "This is not a customer sms"
-				return false
-				
-			end
+			byebug
+			logger.debug "This is not a customer sms"
+			return false
 		
 		end
 	end

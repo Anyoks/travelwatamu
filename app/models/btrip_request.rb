@@ -68,9 +68,25 @@ class BtripRequest < ApplicationRecord
 		# The driver after completing the trip can then text back to update their availability status or 
 		# TODO
 		# automatically update this after 30mins
-		self.tuktuk.update_attributes(status: "false")
+		self.bajaj.update_attributes(status: "false")
 
 		return new_trip
+	end
+
+	def cancel_trip
+
+		logger.debug "Cancelling A trip"	
+		cancelled_trip = self
+
+		# change status
+		cancelled_trip.update_attributes(status: "cancelled")
+		# changed sent sms status
+		cancelled_trip.sms_btrip_request.update_attributes(status: "cancelled")
+		# make driver available
+		cancelled_trip.bajaj.update_attributes(status: "true")
+
+		logger.debug "Customer has Cancelled A bajaj Trip request"
+		return cancelled_trip
 	end
 	
 	protected

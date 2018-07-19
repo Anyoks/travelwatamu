@@ -16,7 +16,7 @@
 # failed    - if the driver took too long to respond 
 # waiting   - if the message was not sent too long ago and a response is being awaited 
 # success   - if the driver accepted the trip request
-# cancelled -  if the driver did not accept the trip 
+# cancelled -  if the driver did not accept the trip or the customer cancelled this trip
 
 class TtripRequest < ApplicationRecord
 	belongs_to :tuktuk
@@ -70,6 +70,22 @@ class TtripRequest < ApplicationRecord
 		self.tuktuk.update_attributes(status: "false")
 		
 		return new_trip
+	end
+
+	def cancel_trip
+
+		logger.debug "Cancelling A trip"	
+		cancelled_trip = self
+
+		# change status
+		cancelled_trip.update_attributes(status: "cancelled")
+		# changed sent sms status
+		cancelled_trip.sms_ttrip_request.update_attributes(status: "cancelled")
+		# make driver available
+		cancelled_trip.tuktuk.update_attributes(status: "true")
+
+		logger.debug "Customer has Cancelled A tuktuk Trip request"
+		return cancelled_trip
 	end
 
 

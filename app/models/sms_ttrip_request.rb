@@ -15,7 +15,7 @@
 # status can be
 # waiting   - the sms was not sent long ago, a response is being waited for
 # falied    - The driver took too long to respond
-# Cancelled - the driver did not accept the trip request
+# Cancelled - the driver did not accept the trip request or Customer cancelled there request
 # success  - the driver accepted the trip request
 # 
 # phone_number is the customer's number
