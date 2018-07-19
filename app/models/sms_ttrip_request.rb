@@ -15,7 +15,7 @@
 # status can be
 # waiting   - the sms was not sent long ago, a response is being waited for
 # falied    - The driver took too long to respond
-# Cancelled - the driver did not accept the trip request
+# Cancelled - the driver did not accept the trip request or Customer cancelled there request
 # success  - the driver accepted the trip request
 # 
 # phone_number is the customer's number
@@ -49,5 +49,15 @@ class SmsTtripRequest < ApplicationRecord
 		ttrip_request.update_attributes(status: "#{status}")
 		logger.debug "UPDATING Ttrip Request. Driver's response:: #{status}"
 	end
-	
+
+	def start_trip
+		trip = self.ttrip_request.start_trip
+
+		if trip
+			return trip
+		else
+			logger.debug "Error creating a new trip"
+			return false
+		end
+	end
 end

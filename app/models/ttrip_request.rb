@@ -14,9 +14,9 @@
 
 # Status can be:
 # failed    - if the driver took too long to respond 
-# waiting   - if the message was not sent too long ago and a response is being awaited
+# waiting   - if the message was not sent too long ago and a response is being awaited 
 # success   - if the driver accepted the trip request
-# cancelled -  if the driver did not accept the trip 
+# cancelled -  if the driver did not accept the trip or the customer cancelled this trip
 
 class TtripRequest < ApplicationRecord
 	belongs_to :tuktuk
@@ -25,7 +25,7 @@ class TtripRequest < ApplicationRecord
 	has_one    :ttrip
 	after_commit :send_sms_ttrip_request, on: :create
 
-
+	include Triprequest
 	# a ttrip is created  if a ttrip_request is successful
 	# 
 	# send message to driver asking if they can take this job
@@ -45,41 +45,75 @@ class TtripRequest < ApplicationRecord
  		params = []
  		params << phone_number << sent_sms << ttrip_request_id << received_sms << status
 
- 		save_params = ttrip_params params
+ 		save_params = ttrip_request_params params
 
  		sms = SmsTtripRequest.new(save_params)
  		sms.save
  		logger.debug "Created New SMS Tuktuk Trip Request"		
 	end
 
-	def get_driver_phone_number
+	def start_trip
+		# make a new trip
+		trip_params_array  = []
+		ttrip_request_id  = self.id
+		status 			  = "started"
+		trip_params_array << ttrip_request_id << status
 
-		number = self.tuktuk.phone_number
-		return number
+		save_params = ttrip_params trip_params_array
+		new_trip = Ttrip.new(save_params)
+		new_trip.save
+
+		# Make Driver availabilty to false.
+		# The driver after completing the trip can then text back to update their availability status or 
+		# TODO
+		# automatically update this after 30mins
+		self.tuktuk.update_attributes(status: "false")
+		
+		return new_trip
 	end
 
-	def get_transport_mode
+	def cancel_trip
 
-		transport_mode =  self.sms.transport_mode
-		return transport_mode
+		logger.debug "Cancelling A trip"	
+		cancelled_trip = self
+
+		# change status
+		cancelled_trip.update_attributes(status: "cancelled")
+		# changed sent sms status
+		cancelled_trip.sms_ttrip_request.update_attributes(status: "cancelled")
+		# make driver available
+		cancelled_trip.tuktuk.update_attributes(status: "true")
+
+		logger.debug "Customer has Cancelled A tuktuk Trip request"
+		return cancelled_trip
 	end
 
-	def get_current_location
-		location = self.sms.current_location
-		return location
-	end
 
-	def get_customer_number
-		phone_number = self.phone_number
-		return phone_number
-	end
+######################
+#
+# TODO
+# change waiting to failed in an hour. create cron job
+# when this changes to failed, a new trip request should be made.
+# 
+# 
+# what  if a customer makes two simulitaneous trip requests?
+# add a mechanism to detect that and respond appropriately to the customer.
+
 
 protected
 
-	def ttrip_params data
+	def ttrip_request_params data
 		name = ["phone_number", "sent_sms", "ttrip_request_id", "received_sms", "status"] 
 		hash = Hash[*name.zip(data).flatten]
 		return hash
 		
+	end
+
+
+
+	def ttrip_params data
+		name = ["ttrip_request_id", "status"]
+		hash = Hash[*name.zip(data).flatten]
+		return hash
 	end
 end

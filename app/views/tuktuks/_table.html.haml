@@ -1,0 +1,81 @@
+.row
+  .col-xs-12
+    .box
+      .box-header
+        %h3.box-title Books In the Database
+      / /.box-header
+      .box-body
+        #example1_wrapper.dataTables_wrapper.form-inline.dt-bootstrap
+          .row
+            .col-sm-5
+            .col-sm-7
+              .digg_pagination
+                = will_paginate tuktuks 
+            /   #example1_length.dataTables_length
+            /     %label
+            /       Show
+            /       %select.form-control.input-sm{"aria-controls" => "example1", :name => "example1_length"}
+            /         %option{:value => "10"} 10
+            /         %option{:value => "25"} 25
+            /         %option{:value => "50"} 50
+            /         %option{:value => "100"} 100
+            /       entries
+            / .col-sm-6
+            /   #example1_filter.dataTables_filter
+            /     %label
+            /       Search:
+            /       %input.form-control.input-sm{"aria-controls" => "example1", :placeholder => "", :type => "search"}/
+          .row
+            .col-sm-12
+              %table#example1.table.table-bordered.table-striped.dataTable{"aria-describedby" => "example1_info", :role => "grid"}
+                %thead
+                  %tr{:role => "row"}
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "Engine version: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 80px;", :tabindex => "0"} Status
+                    %th.sorting_asc{"aria-controls" => "example1", "aria-label" => "Rendering engine: activate to sort column descending", "aria-sort" => "ascending", :colspan => "1", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} First name
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "Browser: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} Last name
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "Platform(s): activate to sort column ascending", :colspan => "", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} Phone number
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "Engine version: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} Number plate
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "Engine version: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 80px;", :tabindex => "0"} Stage
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "CSS grade: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 156px;", :tabindex => "0"} Options
+                %tbody
+                  - tuktuks.each do |tuktuk|
+                    
+                    %tr{:class => "#{cycle('even', 'odd')}"}
+                      %td
+                        -if tuktuk.available?
+                          %i.fa.fa-circle.text-success
+                          Online
+                        -else
+                          %i.fa.fa-circle.text-danger
+                          Busy
+                      %td= tuktuk.first_name
+                      %td= tuktuk.last_name
+                      %td= tuktuk.phone_number
+                      %td= tuktuk.number_plate
+                      %td= tuktuk.stage
+                      
+                      %td 
+                        -if current_admin && current_admin.is_admin?
+                          = link_to 'Show', tuktuk, class: "label label-warning"
+                          = link_to 'Edit', edit_tuktuk_path(tuktuk), class: "label label-default"
+                          = link_to 'Destroy', tuktuk, method: :delete, data: { confirm: 'Are you sure?' }, class: "label label-danger"
+
+                %tfoot
+                  %tr
+                    %th{:colspan => "1", :rowspan => "1"} First name
+                    %th{:colspan => "1", :rowspan => "1"} Last name
+                    %th{:colspan => "1", :rowspan => "1"} Phone number
+                    %th{:colspan => "1", :rowspan => "1"} Number plate
+                    %th{:colspan => "1", :rowspan => "1"} Stage
+                    %th{:colspan => "1", :rowspan => "1"} Status
+                    %th{:colspan => "1", :rowspan => "1"} Options
+          .row
+            .col-sm-5
+              .page_info
+                = page_entries_info tuktuks
+            .col-sm-7
+              .digg_pagination
+                = will_paginate tuktuks 
+      / /.box-body
+    / /.box
+  / /.col

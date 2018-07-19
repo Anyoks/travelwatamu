@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180301141752) do
+ActiveRecord::Schema.define(version: 20180719144658) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -65,7 +65,18 @@ ActiveRecord::Schema.define(version: 20180301141752) do
     t.uuid "btrip_request_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["btrip_request_id"], name: "index_btrips_on_btrip_request_id"
+    t.index ["btrip_request_id"], name: "index_btrips_on_btrip_request_id", unique: true
+  end
+
+  create_table "duplicate_messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "message"
+    t.string "transport_mode"
+    t.string "phone_number"
+    t.string "current_location"
+    t.uuid "sms_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sms_id"], name: "index_duplicate_messages_on_sms_id"
   end
 
   create_table "roles", id: :serial, force: :cascade do |t|
@@ -79,6 +90,7 @@ ActiveRecord::Schema.define(version: 20180301141752) do
     t.string "current_location"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "duplicate", default: false
   end
 
   create_table "sms_btrip_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -120,7 +132,7 @@ ActiveRecord::Schema.define(version: 20180301141752) do
     t.uuid "ttrip_request_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["ttrip_request_id"], name: "index_ttrips_on_ttrip_request_id"
+    t.index ["ttrip_request_id"], name: "index_ttrips_on_ttrip_request_id", unique: true
   end
 
   create_table "tuktuks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

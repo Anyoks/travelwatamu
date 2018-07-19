@@ -1,31 +1,6 @@
-%h1 Listing tuktuks
 
-%table
-  %thead
-    %tr
-      %th First name
-      %th Last name
-      %th Number plate
-      %th Phone number
-      %th Stage
-      %th Status
-      %th
-      %th
-      %th
-
-  %tbody
-    - @tuktuks.each do |tuktuk|
-      %tr
-        %td= tuktuk.first_name
-        %td= tuktuk.last_name
-        %td= tuktuk.number_plate
-        %td= tuktuk.phone_number
-        %td= tuktuk.stage
-        %td= tuktuk.status
-        %td= link_to 'Show', tuktuk
-        %td= link_to 'Edit', edit_tuktuk_path(tuktuk)
-        %td= link_to 'Destroy', tuktuk, method: :delete, data: { confirm: 'Are you sure?' }
+=render "tuktuks/table", tuktuks: @tuktuks
 
 %br
-
-= link_to 'New Tuktuk', new_tuktuk_path
+-if current_admin && current_admin.is_admin?
+  %p= link_to 'New Tuktuk', new_tuktuk_path, class: "btn btn-primary"

@@ -1,10 +1,11 @@
 class BajajsController < ApplicationController
+
   before_action :set_bajaj, only: [:show, :edit, :update, :destroy]
 
   # GET /bajajs
   # GET /bajajs.json
   def index
-    @bajajs = Bajaj.all
+    @bajajs = Bajaj.all.sort_by { |book| book.available? ? 0 : 1 }.paginate(:page => params[:page], :per_page => 20)
   end
 
   # GET /bajajs/1

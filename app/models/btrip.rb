@@ -1,3 +1,3 @@
 class Btrip < ApplicationRecord
-	belongs_to :ttrip_request
+	belongs_to :btrip_request
 end
