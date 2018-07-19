@@ -14,6 +14,7 @@
 class Sms < ApplicationRecord
 	has_one :ttrip_request
 	has_one :btrip_request
+	has_many :duplicate_messages
 
 	# attr_reader :text_message
 	# attr_reader :phone_number
@@ -57,6 +58,35 @@ class Sms < ApplicationRecord
 				sms = Sms.new(save_params)
 				sms.save
 				return sms
+
+			else
+				logger.debug "Could not identify tranport mode in the text message: #{self.message}"
+				return false, "There's no tranport mode in the text message."
+			end		
+	end
+
+	def process_duplicate_customer_sms
+		# if the message contains tuk or baj it should be a customer. 	
+		# Must be a customer!
+		# Get the trasport mode 
+	
+		transport_mode = get_transport_mode
+		current_location = get_current_location
+		sms_id = self.id
+
+		# if the returned result is an array, there's an error
+			if transport_mode.class != Array
+
+				# Prepare to save the message
+				params_array = []
+				# this order is important
+				params_array << self.message << transport_mode << @phone_number << current_location << sms_id
+
+				save_params = duplicate_sms_params params_array
+
+				dupsms = DuplicateMessage.new(save_params)
+				dupsms.save
+				return dupsms
 
 			else
 				logger.debug "Could not identify tranport mode in the text message: #{self.message}"
@@ -511,7 +541,7 @@ class Sms < ApplicationRecord
 		phone_number = self.phone_number
 
 		sms = Sms.where(phone_number: phone_number, created_at: 10.minutes.ago..Time.zone.now).order("created_at DESC").first
-		byebug
+		# byebug
 		logger.debug "CHECKING IF THIS IS A DOUBLE REQUEST"
 		# 
 		# TODO
@@ -525,16 +555,20 @@ class Sms < ApplicationRecord
 			logger.debug "SMS ID calling object #{sms.id}"
 
 			if tripReq.present? 
-				
+
+				# create a duplicate message record
+				duplicate = sms.process_duplicate_customer_sms
+				update = sms.update_attributes(duplicate: true)
+
 				tripReqStatus = sms.trip_request.status
-				tripTransMode = sms.trip_request.get_transport_mode
+				tripTransMode = sms.get_transport_mode
 
 				if tripReqStatus == "success"
 					# yes, a driver has responded to the reques but for some reason the user has not
 					# received the confirmatin sms? 
 					byebug
 					# update this sms and  mark it as duplicate request
-					sms.update_attributes(duplicate: true)
+					
 					return true, tripTransMode
 
 				elsif tripReqStatus == "waiting"
@@ -553,6 +587,7 @@ class Sms < ApplicationRecord
 				logger.debug "No trip Request for this customer sms"
 				return false, "no trip"
 			end
+			
 		else
 			# nope this is a new ride req
 			return false, "no trip"
@@ -566,7 +601,7 @@ class Sms < ApplicationRecord
 		bajaj = self.btrip_request.present?
 		tuktuk = self.ttrip_request.present?
 		logger.debug "SMS ID self object #{self.id}"
-		byebug
+		# byebug
 		if bajaj
 			logger.debug "This is Bajaj trip request"
 			return self.btrip_request
@@ -576,7 +611,7 @@ class Sms < ApplicationRecord
 			logger.debug "This is Tuktuk trip request"
 			return self.ttrip_request
 		else
-			byebug
+			# byebug
 			logger.debug "This is not a customer sms"
 			return false
 		
@@ -611,6 +646,11 @@ protected
 	def make_trip_params data, col_name
 		coloumns = col_name
 		hash = Hash[*coloumns.zip(data).flatten]
+		return hash
+	end
+	def duplicate_sms_params data
+		name = ["message", "transport_mode", "phone_number", "current_location", "sms_id"] 
+		hash = Hash[*name.zip(data).flatten]
 		return hash
 	end
 	# FOrm the sms parameters
