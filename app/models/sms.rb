@@ -128,7 +128,7 @@ class Sms < ApplicationRecord
  
 		# 
 		# look for the sms trip request he is replying to
-		request_sms = @driver.sms_ttrip_request.where( created_at: 10.minutes.ago..Time.zone.now , status: "waiting").first
+		request_sms = @driver.sms_ttrip_requests.where( created_at: 10.minutes.ago..Time.zone.now , status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?

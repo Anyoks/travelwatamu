@@ -20,7 +20,7 @@
 # default is false ------>maybe I should change this.
 class Tuktuk < ApplicationRecord
 	has_many :ttrip_requests
-	has_many :sms_ttrip_requests,  through: :trip_requests
+	has_many :sms_ttrip_requests,  through: :ttrip_requests
 	has_many :ttrips,  through: :ttrip_requests
 
 	scope :available, -> { where(status: true)}

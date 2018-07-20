@@ -22,6 +22,12 @@ Rails.application.routes.draw do
       get 'sign_up', to: 'devise/registrations#new'
   end
 
+  if Rails.env == "production"
+    constraints :subdomain => "watamu" do
+      get "*all", to: redirect { |params, req| "https://#{req.domain}/#{req.subdomain}/#{params[:all]}" }
+    end
+  end 
+
   root 'bajajs#index'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 # end
