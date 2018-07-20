@@ -42,6 +42,7 @@
 					// Images (in the format of 'url': 'alignment').
 						images: {
 							'/assets/1.jpg': 'center',
+							'/assets/2.jpg': 'center',
 							'/assets/3.jpg': 'center',
 							'/assets/4.jpg': 'center',
 							'/assets/5.jpg': 'center',
