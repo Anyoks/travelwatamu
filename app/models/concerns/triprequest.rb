@@ -280,6 +280,15 @@ module Triprequest
 		end
 	end
 
+	def fail_trip
+
+		logger.debug "Driver took too long to respond, Failing this trip"
+		failing_trip = self
+
+		failing_trip.update_attributes(status: "failed")
+		return true
+	end
+
 	def responsiveness
 		last_3_days = self.class.where(created_at: 3.days.ago..Time.now, id: self.id)
 		positive_response = last_3_days.where.not(status: 'failed').where.not(status: 'waiting')
@@ -315,6 +324,17 @@ module Triprequest
 		end
 
 		return first_name
+	end
+
+	def get_driver_id
+
+		if self.class.name == "BtripRequest"
+			driver_id = self.bajaj.id
+		else
+			driver_id = self.tuktuk.id
+		end
+
+		return driver_id
 	end
 
 	def get_transport_mode
