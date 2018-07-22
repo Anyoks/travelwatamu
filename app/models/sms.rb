@@ -200,7 +200,7 @@ class Sms < ApplicationRecord
 	def response_processing_for_bajaj_driver
 
 		# check trip request by phone number
-		request_sms = @driver.sms_btrip_request.where(status: "waiting").first
+		request_sms = @driver.sms_btrip_request.where(created_at: 10.minutes.ago..Time.now, status: "waiting").first
 
 		# if this is nil then there was no trip request made for him
 		if request_sms.present?
@@ -401,29 +401,35 @@ class Sms < ApplicationRecord
 
 	def make_trip_request
 
-		doubleReqCheck = self.check_if_double_request
-		# byebug
-		if doubleReqCheck[0]
-			# tell the user we are already processing your initial request.
-			logger.debug "System is processing a similar request, telling user to wait..."
-			return true, "We received your previous request, a driver will be sent right away", doubleReqCheck[1]
+		# doubleReqCheck = self.check_if_double_request
+		# # byebug
+		# if doubleReqCheck[0]
+		# 	# tell the user we are already processing your initial request.
+		# 	logger.debug "System is processing a similar request, telling user to wait..."
+		# 	return true, "We received your previous request, a driver will be sent right away", doubleReqCheck[1]
 			
-		else
+		# # else
 			# if transport mode is tuktuk
 			if self.get_transport_mode == "tukutuku"
 				request_trip = self.make_tuk_tuk_trip_request
+
+				# fail this request after 10 minutes of no response from the driver
+				TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "tukutuku")
 				return request_trip
 
 			elsif self.get_transport_mode == "bajaji"
 				
 			# if transport mode is bajaj
 				request_trip = self.make_bajaji_trip_request
+
+				# fail this request after 10 minutes of no response from the driver
+				TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "bajaji")
 				return request_trip
 			else
 				logger.debug "Could not get trasport Mode"
 				return false
 			end
-		end
+		# end
 		# return doubleReqCheck
 		
 	end
@@ -495,6 +501,8 @@ class Sms < ApplicationRecord
 			trip = BtripRequest.new(save_params)
 			trip.save
 			logger.debug "Made a Bajaj Trip Request For customer"
+			#TODO
+			#  make a worker that will make a new tiprequest after 60 seconds of driver delay.
 			return trip	
 		else
 			logger.debug "All drivers are busy"
@@ -556,6 +564,7 @@ class Sms < ApplicationRecord
 
 			if tripReq.present? 
 
+				logger.debug "System is processing a similar request, telling user to wait..."
 				# create a duplicate message record
 				duplicate = sms.process_duplicate_customer_sms
 				update = sms.update_attributes(duplicate: true)
