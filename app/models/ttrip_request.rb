@@ -49,6 +49,7 @@ class TtripRequest < ApplicationRecord
 
  		sms = SmsTtripRequest.new(save_params)
  		sms.save
+ 		
  		logger.debug "Created New SMS Tuktuk Trip Request"		
 	end
 
@@ -88,16 +89,17 @@ class TtripRequest < ApplicationRecord
 		return cancelled_trip
 	end
 
+	
+
 
 ######################
 #
 # TODO
-# change waiting to failed in an hour. create cron job
+# change waiting to failed in an hour(done). create cron job
 # when this changes to failed, a new trip request should be made.
 # 
 # 
-# what  if a customer makes two simulitaneous trip requests?
-# add a mechanism to detect that and respond appropriately to the customer.
+
 
 
 protected
