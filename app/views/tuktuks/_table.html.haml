@@ -42,7 +42,10 @@
                     
                     %tr{:class => "#{cycle('even', 'odd')}"}
                       %td
-                        -if tuktuk.available?
+                        -if tuktuk.requested?
+                          %i.fa.fa-circle.text-default
+                          Pending req
+                        -elsif tuktuk.available?
                           %i.fa.fa-circle.text-success
                           Online
                         -else

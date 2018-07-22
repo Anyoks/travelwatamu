@@ -42,8 +42,10 @@
                     
                     %tr{:class => "#{cycle('even', 'odd')}"}
                       %td
-                        -if bajaj.available?
-                          / = link_to "#{bajaj.status}", '#', class: "fa fa-circle text-success"
+                        -if bajaj.requested?
+                          %i.fa.fa-circle.text-default
+                          Pending req
+                        -elsif bajaj.available?
                           %i.fa.fa-circle.text-success
                           Online
                         -else
