@@ -133,6 +133,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 							# trip request was successful
 							# send message to both driver and customer
 							# 
+							driver_id = trip.get_driver_id
 							driver_phone_number = trip.get_driver_phone_number
 							customer_number = @sms.phone_number
 							transport_mode = trip.get_transport_mode
@@ -151,6 +152,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 
 							]}, status: :ok
 
+							# make the driver avalibale after 10 minutes
+							DriverAvailableWorker.perform_in(10.minutes, driver_id, transport_mode)
 						else
 							
 							# trip request was not successful. maybe all drivers were busy
