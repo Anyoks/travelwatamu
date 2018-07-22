@@ -85,3 +85,5 @@ gem 'paperclip'
 gem 'simple_form', '~> 3.5'
 # Pagination
 gem 'will_paginate', '~> 3.1.1'
+# background jobs
+gem 'sidekiq'

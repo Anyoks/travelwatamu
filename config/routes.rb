@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
 
-
+  require 'sidekiq/web'
   namespace :api do
     namespace :v1 do
       get '/sms', :to => 'sms#create'
@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   devise_for :admins
 
   authenticated :admin do
+    mount Sidekiq::Web => '/sidekiq'
     root 'bajajs#index', as: :authenticated_admin
   end
 
@@ -24,7 +25,7 @@ Rails.application.routes.draw do
 
   if Rails.env == "production"
     constraints :subdomain => "watamu" do
-      get "*all", to: redirect { |params, req| "https://#{req.domain}/#{req.subdomain}/#{params[:all]}" }
+      post "*all", to: redirect { |params, req| "https://#{req.domain}/#{req.subdomain}/#{params[:all]}" }
     end
   end 
 

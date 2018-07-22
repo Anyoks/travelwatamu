@@ -254,6 +254,17 @@ module Driver
 		self.update_attributes(status: true)
 	end
 
+	def requested?
+		# check if the driver has any pending requests in the last 10 minutes
+		pending_requests = self.trip_requests.where(created_at: 10.minutes.ago..Time.now)
+
+		if pending_requests.present?
+			return true
+		else
+			return false
+		end
+	end
+
 	def trip_requests
 		if self.class.name == "Tuktuk"
 			self.ttrip_requests
