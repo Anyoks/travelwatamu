@@ -12,7 +12,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 		if sender
 			# do driver stuff
 			result_array = @sms.process_driver_sms
-
+			
 			if result_array.size == 5
 				# success message
 				# send driver customer contacts
@@ -30,6 +30,9 @@ class Api::V1::SmsController < Api::V1::BaseController
 					}
 
 					]}, status: :ok
+			elsif result_array.size == 4
+
+			 	return registered_driver_response result_array
 
 			elsif result_array.size == 3
 				# driver rejected the  job
@@ -182,9 +185,20 @@ class Api::V1::SmsController < Api::V1::BaseController
 		end		
   end
 
+  def all
+  	
+  end
+
 
 
   protected
+
+  def registered_driver_response result_array 
+	render json: { sms: [
+	 	success: true, rcv: "driver", message: "Usajili Umekamilika.\nNames: #{result_array[0]} #{result_array[1]}.\nNumber Plate: #{result_array[2]}.\nStage: #{result_array[3]}"
+
+ 	]}, status: :ok
+  end
 
   def ensure_message_param_exists
   	ensure_param_exists :message

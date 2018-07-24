@@ -9,6 +9,7 @@
 #  current_location :string
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
+#  duplicate        :boolean          default(FALSE)
 #
 
 class Sms < ApplicationRecord
@@ -44,6 +45,7 @@ class Sms < ApplicationRecord
 	
 		transport_mode = get_transport_mode
 		current_location = get_current_location
+		sender = "customer"
 
 		# if the returned result is an array, there's an error
 			if transport_mode.class != Array
@@ -51,7 +53,7 @@ class Sms < ApplicationRecord
 				# Prepare to save the message
 				params_array = []
 				# this order is important
-				params_array << self.message << transport_mode << @phone_number << current_location
+				params_array << self.message << transport_mode << @phone_number << current_location << sender
 
 				save_params = sms_params params_array
 
@@ -273,20 +275,82 @@ class Sms < ApplicationRecord
 		# if the message contains ndio or la or busy or free it's definitely a driver replying the first text
 		# if it's a driver then he probably is reply trip request sms with a yes or no
 		# *******future implement he probably is telling the system that he is free or busy
+		# 
+		
+		# Prepare to save the message
+		params_array = []
+		transport_mode = ""
+		current_location = ""
 
-		# tuktuk or bajaj?
-		@driver = which_driver 
+		# check if the driver is registering or not
+		sms = @text_message.split
 
-		if @driver.class.name == "Tuktuk"
-			response = response_processing_for_tuktuk_driver
-			return response
+		if sms[0].downcase == "register"
 
-		elsif @driver.class.name == "Bajaj"
-			response = response_processing_for_bajaj_driver
+			registered_driver = self.register_driver
+
+			if registered_driver[0]
+				# success registering driver
+				# a driver object has been returned
+				registered_driver = registered_driver[1]
+				first_name 		= registered_driver.first_name
+				last_name  		= registered_driver.last_name
+				number_plate 	= registered_driver.number_plate
+				stage			= registered_driver.stage
+
+				return first_name, last_name, number_plate, stage
+			else
+				# error regitstering driver
+				return registered_driver
+			end
 		else
-			logger.debug "Error Finding the driver"
-			return false, "Pole, hujajisajili katika huduma Hii. Kama wewe una tukutuku au bajaji na ungependa
-				kupata kazi ya ziada, Tafadhali piga simu kwa nambari hii kwa habari zaidi. 0711430817 "
+			# normal driver sms processing
+			# tuktuk or bajaj?
+			@driver = which_driver 
+
+			if @driver.class.name == "Tuktuk"
+
+				sender = "Tuktuk"
+				# this order is important
+				params_array << self.message << transport_mode << @phone_number << current_location << sender
+
+				save_params = sms_params params_array
+
+				sms = Sms.new(save_params)
+				sms.save
+
+				response = response_processing_for_tuktuk_driver
+				return response
+
+			elsif @driver.class.name == "Bajaj"
+
+				sender = "Bajaj"
+				# this order is important
+				params_array << self.message << transport_mode << @phone_number << current_location << sender
+
+				save_params = sms_params params_array
+
+				sms = Sms.new(save_params)
+				sms.save
+
+				response = response_processing_for_bajaj_driver
+				return response
+			else
+
+				sender = "unkown_driver"
+				# this order is important
+				params_array << self.message << transport_mode << @phone_number << current_location << sender
+
+				save_params = sms_params params_array
+
+				sms = Sms.new(save_params)
+				sms.save
+
+
+				logger.debug "Error Finding the driver"
+				return false, "Pole, hujajisajili katika huduma Hii. Kama wewe una tukutuku au bajaji na ungependa
+					kupata kazi ya ziada, Tafadhali piga simu kwa nambari hii kwa habari zaidi. 0711430817 "
+			end
 		end
 		
 	end
@@ -298,18 +362,118 @@ class Sms < ApplicationRecord
 
 		standardize_sms
 
-		response = @text_message.gsub(/[[:space:]]/, '')
+		sms = @text_message.split
 
-		if response == "yes" || response  == "ndio" || response == "sawa" || response == "sawasawa" || response == "poa" || response == "haya"
-			logger.debug "This is a driver"
+		if sms.size < 2
+
+			response = @text_message.gsub(/[[:space:]]/, '')
+
+			if response == "yes" || response  == "ndio" || response == "sawa" || response == "sawasawa" || response == "poa" || response == "haya"
+				logger.debug "This is a driver"
+				return true
+			elsif response == "no" || response  == "la" || response  == "hapana"
+				logger.debug "This is a driver"
+				return true
+			end
+		elsif sms[0].downcase == "register"
+			# could be a driver regitstering
+			logger.debug "driver attempting to register"
 			return true
-		elsif response == "no" || response  == "la" || response  == "hapana"
-			logger.debug "This is a driver"
-			return true
-		else
-			logger.debug "This is a customer"
+		else	
+			logger.debug "This is a customer"		
 			return false
+		end
+	end
+
+	def register_driver
+
+		transport_mode 		= ""
+		current_location 	= ""
+		params_array 		= []
+		register = self.extract_driver_details
+
+		if register.class != Array 
+			sender = register.class.name
+
+			# this order is important
+			params_array << self.message << transport_mode << self.phone_number << current_location << sender
+
+			save_params = sms_params params_array
+
+			sms = Sms.new(save_params)
+			sms.save
+
+			return true, register
+
+		else
+
+			sender = "unidentified sender"
+
+			# this order is important
+			params_array << self.message << transport_mode << self.phone_number << current_location << sender
+
+			save_params = sms_params params_array
+
+			sms = Sms.new(save_params)
+			sms.save
+
+			return false, register[1]			
 		end		
+	end
+
+	def extract_driver_details
+		# register bajaji Dennis Orina KMC0979 watamu
+		# register bajaji/tukutuku first_name last_name number_plate location
+		sms_format = "Andika Ujumbe kwa njia hii: Register bajaji/tukutuku first_name last_name number_plate location."
+		
+		standardize_sms
+
+		raw_driver_params = []
+
+		message_array 	= @text_message.split
+
+		if message_array.size == 6
+
+			driver 			= message_array[1]
+			first_name		= message_array[2]
+			last_name		= message_array[3]
+			number_plate	= message_array[4]
+			stage	 		= message_array[5]
+
+			if driver.downcase == "bajaji" || driver.downcase == "bajaj" || driver.downcase == "baj" 
+
+				
+
+				raw_driver_params << first_name << last_name <<  @phone_number <<number_plate << stage
+
+				driver_params = form_driver_params raw_driver_params
+
+				bajaj = Bajaj.new(driver_params)
+				bajaj.save
+
+				logger.debug "Registerred Bajaj Driver"
+				return bajaj
+
+			elsif driver.downcase == "tukutuku" || driver.downcase == "tuktuk" || driver.downcase == "tuk" 
+				
+				raw_driver_params << first_name << last_name <<  @phone_number <<number_plate << stage
+
+				driver_params = form_driver_params raw_driver_params
+				tuktuk = Tuktuk.new(driver_params)
+				tuktuk.save
+
+				logger.debug "Registerred Tuktuk Driver"
+				return tuktuk
+			else
+				logger.debug "Error Extracting Driver type"
+				return false, sms_format
+			end
+
+		else
+			logger.debug "Error, Sms does not contain enough details"
+			return false, sms_format
+		end
+
 	end
 
 
@@ -657,6 +821,14 @@ protected
 		hash = Hash[*coloumns.zip(data).flatten]
 		return hash
 	end
+
+	def form_driver_params data
+		# raw_driver_params << first_name << last_name <<  @phone_number <<number_plate << stage
+		name = ["first_name", "last_name", "phone_number", "number_plate", "stage"] 
+		hash = Hash[*name.zip(data).flatten]
+		return hash
+	end
+
 	def duplicate_sms_params data
 		name = ["message", "transport_mode", "phone_number", "current_location", "sms_id"] 
 		hash = Hash[*name.zip(data).flatten]
@@ -664,7 +836,7 @@ protected
 	end
 	# FOrm the sms parameters
 	def sms_params data
-		name = ["message", "transport_mode", "phone_number", "current_location"] 
+		name = ["message", "transport_mode", "phone_number", "current_location", "sender"] 
 		hash = Hash[*name.zip(data).flatten]
 		return hash
 	end
