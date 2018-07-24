@@ -6,6 +6,8 @@ Rails.application.routes.draw do
       get '/sms', :to => 'sms#create'
       post '/sms', :to => 'sms#create'
       resources :sms, only: [:create]
+      get '/drivers/tuktuk_drivers'
+      get '/drivers/bajaj_drivers'
     end
   end
   
