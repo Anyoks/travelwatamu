@@ -9,6 +9,7 @@
 #  current_location :string
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
+#  duplicate        :boolean          default(FALSE)
 #
 
 require 'test_helper'

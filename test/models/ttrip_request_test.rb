@@ -9,6 +9,7 @@
 #  status       :string
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
+#  sms_id       :uuid
 #
 
 require 'test_helper'
