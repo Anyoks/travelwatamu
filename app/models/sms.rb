@@ -276,7 +276,7 @@ class Sms < ApplicationRecord
 		# if it's a driver then he probably is reply trip request sms with a yes or no
 		# *******future implement he probably is telling the system that he is free or busy
 		# 
-		
+		  
 		# Prepare to save the message
 		params_array = []
 		transport_mode = ""
