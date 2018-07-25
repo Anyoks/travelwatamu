@@ -578,9 +578,6 @@ class Sms < ApplicationRecord
 				request_trip = self.make_tuk_tuk_trip_request
 
 				# fail this request after 10 minutes of no response from the driver
-				
-
-
 				unless request_trip.class == Array
 					TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "tukutuku") 
 				end
@@ -592,7 +589,9 @@ class Sms < ApplicationRecord
 				request_trip = self.make_bajaji_trip_request
 
 				# fail this request after 10 minutes of no response from the driver
-				TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "bajaji")
+				unless request_trip.class == Array
+					TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "bajaji")
+				end
 				return request_trip
 			else
 				logger.debug "Could not get trasport Mode"
