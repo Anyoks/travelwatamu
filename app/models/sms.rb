@@ -578,7 +578,12 @@ class Sms < ApplicationRecord
 				request_trip = self.make_tuk_tuk_trip_request
 
 				# fail this request after 10 minutes of no response from the driver
-				TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "tukutuku")
+				
+
+
+				unless request_trip.class == Array
+					TripRequestFailedWorker.perform_in(10.minutes, request_trip.id, "tukutuku") 
+				end
 				return request_trip
 
 			elsif self.get_transport_mode == "bajaji"
