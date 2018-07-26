@@ -61,6 +61,34 @@ class TuktuksController < ApplicationController
     end
   end
 
+  def make_available
+    @tuktuk = Tuktuk.find(params[:tuktuk_id])
+    available = @tuktuk.make_available
+    if available
+      respond_to do |format|
+        format.html { redirect_to tuktuks_url, notice: 'Tuktuk is now available.' }
+      end
+      # format.json { render :show, status: :ok, location: @tuktuk }
+    else
+      respond_to do |format|
+        format.html { redirect_to tuktuks_url, notice: 'Tuktuk has pending requests' }
+      # format.json { render :show, status: :ok, location: @tuktuk }
+      end
+    end
+  end
+
+  def make_all_availble 
+    @tuktuks = Tuktuk.where(status: false)
+
+    @tuktuks.each do |tuktuk|
+      tuktuk.make_available
+    end
+
+    respond_to do |format|
+      format.html { redirect_to tuktuks_url, notice: 'Tuktuks are all now available.' }
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_tuktuk

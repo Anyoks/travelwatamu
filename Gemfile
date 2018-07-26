@@ -87,3 +87,5 @@ gem 'simple_form', '~> 3.5'
 gem 'will_paginate', '~> 3.1.1'
 # background jobs
 gem 'sidekiq'
+# schedule background jobs
+gem 'sidekiq-scheduler'

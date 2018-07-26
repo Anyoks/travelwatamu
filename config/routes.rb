@@ -12,7 +12,10 @@ Rails.application.routes.draw do
   end
   
   resources :bajajs
-  resources :tuktuks
+  resources :tuktuks do
+    post :make_available, :to => 'tuktuks#make_available'
+    # get :make_all_available, :to => 'tuktuks#make_all_available'
+  end
   devise_for :admins
 
   authenticated :admin do

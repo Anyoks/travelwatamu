@@ -36,7 +36,8 @@
                     %th.sorting{"aria-controls" => "example1", "aria-label" => "Platform(s): activate to sort column ascending", :colspan => "", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} Phone number
                     %th.sorting{"aria-controls" => "example1", "aria-label" => "Engine version: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 100px;", :tabindex => "0"} Number plate
                     %th.sorting{"aria-controls" => "example1", "aria-label" => "Engine version: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 80px;", :tabindex => "0"} Stage
-                    %th.sorting{"aria-controls" => "example1", "aria-label" => "CSS grade: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 156px;", :tabindex => "0"} Options
+                    %th.sorting{"aria-controls" => "example1", "aria-label" => "CSS grade: activate to sort column ascending", :colspan => "1", :rowspan => "1", :style => "width: 156px;", :tabindex => "0"} Options 
+                    
                 %tbody
                   - tuktuks.each do |tuktuk|
                     
@@ -59,6 +60,9 @@
                       
                       %td 
                         -if current_admin && current_admin.is_admin?
+                          -if tuktuk.available?
+                          -else
+                            = link_to 'Make available', tuktuk_make_available_path( :tuktuk_id => tuktuk.id), method: :post, :data => { :confirm => 'Are you sure?' }, class: "label label-primary"
                           = link_to 'Show', tuktuk, class: "label label-warning"
                           = link_to 'Edit', edit_tuktuk_path(tuktuk), class: "label label-default"
                           = link_to 'Destroy', tuktuk, method: :delete, data: { confirm: 'Are you sure?' }, class: "label label-danger"

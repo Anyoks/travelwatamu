@@ -251,7 +251,14 @@ module Driver
 	end
 
 	def make_available
-		self.update_attributes(status: true)
+		
+		if requested?
+			return false
+		else
+			self.update_attributes(status: true)
+			return true
+		end
+		
 	end
 
 	def make_unavailable
