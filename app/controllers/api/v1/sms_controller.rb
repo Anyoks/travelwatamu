@@ -20,13 +20,13 @@ class Api::V1::SmsController < Api::V1::BaseController
 				# return true, customer_number, driver_plate, location, "tukutuku"
 				
 				render json: { sms: [ {
-					success: true, rcv: "customer", message: "#{result_array[4]} number plate: #{result_array[2]} yaja hapo #{result_array[3]}. Utapigiwa simu na dereva pia. Subiri kidogo...",
-								 phone_number: "#{result_array[1]}"
+					success: true, message: "#{result_array[4]} number plate: #{result_array[2]} yaja hapo #{result_array[3]}. Utapigiwa simu na dereva pia. Subiri kidogo...",
+								 phone_number: "#{result_array[1]}", rcv: "customer"
 				 	},
 
 					{
-					 	success: true, rcv: "driver", message: "Customer Number: #{result_array[1]}. Mpigie simu, amesama yuko #{result_array[3]}. Kazi kwako!",
-					 				 phone_number: "#{@sms.phone_number}"
+					 	success: true, message: "Customer Number: #{result_array[1]}. Mpigie simu, amesama yuko #{result_array[3]}. Kazi kwako!",
+					 				 phone_number: "#{@sms.phone_number}", rcv: "driver"
 					}
 
 					]}, status: :ok
@@ -50,7 +50,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 					# send message to new driver
 					render json: { sms: [ 
 					{
-					 	success: true,message: "#{driver_name}, Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
+					 	success: true, message: "#{driver_name}, Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
 					 				 phone_number: "#{@driver_phone_number}", rcv: "driver"
 					}
 
@@ -63,8 +63,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 					location = trip.get_current_location
 					customer_number = trip.get_customer_number
 
-					render json: { sms: [success: false, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
-					 phone_number: "#{customer_number}"]}, status: :ok
+					render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
+					 phone_number: "#{customer_number}", rcv: "customer"]}, status: :ok
 
 				end
 
@@ -73,8 +73,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 				# there was an error. 
 				# send the driver that error message
 				unkown_driiver = @sms.phone_number
-				render json: { sms: [success: false, rcv: "driver", message: "#{result_array[1]}",
-					 phone_number: "#{unkown_driiver}"]}, status: :ok
+				render json: { sms: [success: false, message: "#{result_array[1]}",
+					 phone_number: "#{unkown_driiver}", rcv: "driver"]}, status: :ok
 				
 			end
 
@@ -94,20 +94,20 @@ class Api::V1::SmsController < Api::V1::BaseController
 					driver_name = cancelled_trip.get_driver_first_name
 
 					render json: { sms: [ {
-					success: true, rcv: "customer", message: "Umecancel #{transport_mode} isije #{location}.  Asante kwa kutumia huduma hii.",
-								 phone_number: "#{customer_no}"
+					success: true, message: "Umecancel #{transport_mode} isije #{location}.  Asante kwa kutumia huduma hii.",
+								 phone_number: "#{customer_no}", rcv: "customer"
 				 	},
 
 					{
-					 	success: true, rcv: "driver", message: "#{driver_name}, Customer #{customer_no} wa, hapo #{cancelled_trip.location} amekatiza safari hii. Usiende huko. ",
-					 				 phone_number: "#{driver_no}"
+					 	success: true, message: "#{driver_name}, Customer #{customer_no} wa, hapo #{cancelled_trip.location} amekatiza safari hii. Usiende huko. ",
+					 				 phone_number: "#{driver_no}", rcv: "driver"
 					}
 
 					]}, status: :ok
 				else
 						render json: { sms: [ {
-						success: true, rcv: "customer", message: "Samahani, haujaagiza tukutuku/bajaji ije kukuchukua",
-									 phone_number: "#{customer_no}"
+						success: true, message: "Samahani, haujaagiza tukutuku/bajaji ije kukuchukua",
+									 phone_number: "#{customer_no}", rcv: "customer"
 					 	}
 					 ]}
 				end
@@ -121,8 +121,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 					# do something about this
 					# maybe save this in a double tripRequest
 					transport_mode = double_req[1]
-					render json: { sms: [success: false, rcv: "customer", message: "Asante. Uliagizia #{transport_mode}, itatumwa sasa hivi, subiri kidogo \n Jibu na STOP kusitisha safari hii.",
-					 phone_number: "#{@sms.phone_number}"]}, status: :ok
+					render json: { sms: [success: false, message: "Asante. Uliagizia #{transport_mode}, itatumwa sasa hivi, subiri kidogo \n Jibu na STOP kusitisha safari hii.",
+					 phone_number: "#{@sms.phone_number}", rcv: "customer"]}, status: :ok
 				else
 					# make a new trip
 					sms = @sms.process_customer_sms
@@ -144,13 +144,13 @@ class Api::V1::SmsController < Api::V1::BaseController
 							driver_name = trip.get_driver_first_name
 
 							render json: { sms: [ {
-							success: true, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. Subiri kidogo... \n Tuma STOP kusimamisha safari hii",
-										 phone_number: "#{customer_number}"
+							success: true, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. Subiri kidogo... \n Tuma STOP kusimamisha safari hii",
+										 phone_number: "#{customer_number}", rcv: "customer"
 						 	},
 
 							{
-							 	success: true, rcv: "driver", message: "#{driver_name}, Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la. uko na sekunde 60. ",
-							 				 phone_number: "#{driver_phone_number}"
+							 	success: true, message: "#{driver_name}, Kuna Kazi, hapo #{trip.location} Uko free? Jibu na Ndio au la. uko na sekunde 60. ",
+							 				 phone_number: "#{driver_phone_number}", rcv: "driver"
 							}
 
 							]}, status: :ok
@@ -165,8 +165,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 							
 							
 								# transport_mode = trip[2]
-							render json: { sms: [success: false, rcv: "customer", message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
-							 phone_number: "#{@sms.phone_number}"]}, status: :ok
+							render json: { sms: [success: false, message: "Asante. Umeagiza #{transport_mode} ikuchukue #{location}. #{transport_mode} zote ziko busy. Jaribu baadaye...kidogo",
+							 phone_number: "#{@sms.phone_number}", rcv: "customer"]}, status: :ok
 							
 							
 							
@@ -196,7 +196,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 
   def registered_driver_response result_array 
 	render json: { sms: [
-	 	success: true, rcv: "driver", message: "Usajili Umekamilika.\nNames: #{result_array[0]} #{result_array[1]}.\nNumber Plate: #{result_array[2]}.\nStage: #{result_array[3]}"
+	 	success: true, message: "Usajili Umekamilika.\nNames: #{result_array[0]} #{result_array[1]}.\nNumber Plate: #{result_array[2]}.\nStage: #{result_array[3]}", rcv: "driver"
 
  	]}, status: :ok
   end
