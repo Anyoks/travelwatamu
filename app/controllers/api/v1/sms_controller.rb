@@ -196,7 +196,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 
   def registered_driver_response result_array 
 	render json: { sms: [
-	 	success: true, message: "Usajili Umekamilika.\nNames: #{result_array[0]} #{result_array[1]}.\nNumber Plate: #{result_array[2]}.\nStage: #{result_array[3]}", rcv: "driver"
+	 	success: true, message: "Usajili Umekamilika.\nNames: #{result_array[0]} #{result_array[1]}.\nNumber Plate: #{result_array[2]}.\nStage: #{result_array[3]}", phone_number:"#{@sms.phone_number}", rcv: "driver"
 
  	]}, status: :ok
   end
