@@ -173,7 +173,7 @@ class Api::V1::SmsController < Api::V1::BaseController
 						end
 					else
 						# there's an error with the sms
-						render json: { sms: [success: false, rcv: "customer",
+						render json: { sms: [success: false,
 						message: "Ujumbe haujakamilika. Ungependa kuchukuliwa wapi? Wataka Tukutuku au bajaji? Tafadhali tueleze pale ulipo na kama wataka tukutuku au bajaji. Kwa Mafano kama ni Rich Land tuma:::Bajaji Rich Land au tukutuku Rich Land. Jaribu tena.",
 						phone_number: "#{@sms.phone_number}"]}, status: :ok
 						
