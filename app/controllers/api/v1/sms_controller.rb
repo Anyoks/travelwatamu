@@ -50,8 +50,8 @@ class Api::V1::SmsController < Api::V1::BaseController
 					# send message to new driver
 					render json: { sms: [ 
 					{
-					 	success: true, rcv: "driver",message: "#{driver_name}, Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
-					 				 phone_number: "#{@driver_phone_number}"
+					 	success: true,message: "#{driver_name}, Kuna Kazi, hapo #{trip.get_current_location} Uko free? Jibu na Ndio au la ",
+					 				 phone_number: "#{@driver_phone_number}", rcv: "driver"
 					}
 
 					]}, status: :ok
