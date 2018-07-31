@@ -440,7 +440,8 @@ class Sms < ApplicationRecord
 			number_plate	= message_array[4]
 			stage	 		= message_array[5]
 
-			if driver.downcase == "bajaji" || driver.downcase == "bajaj" || driver.downcase == "baj" 
+			# if driver.downcase == "bajaji" || driver.downcase == "bajaj" || driver.downcase == "baj" 
+			if @text_message.include?("baj") 
 
 				
 
@@ -454,7 +455,7 @@ class Sms < ApplicationRecord
 				logger.debug "Registerred Bajaj Driver"
 				return bajaj
 
-			elsif driver.downcase == "tukutuku" || driver.downcase == "tuktuk" || driver.downcase == "tuk" 
+			elsif @text_message.include?("tuk") 
 				
 				raw_driver_params << first_name << last_name <<  @phone_number <<number_plate << stage
 
